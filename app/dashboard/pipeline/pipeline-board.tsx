@@ -195,7 +195,7 @@ export function PipelineBoard({
           >
             <h2 className="text-lg font-medium">{stage.name}</h2>
 
-            <div className="mt-3 space-y-2">
+            <div className="mt-3 space-y-2" data-testid={`cards-${stage.id}`}>
               {stage.cards
                 .slice()
                 .sort((a, b) => a.position - b.position)
@@ -206,7 +206,7 @@ export function PipelineBoard({
                     onDragStart={(event) => {
                       event.dataTransfer.setData("text/plain", card.id);
                     }}
-                    className="rounded border border-gray-200 bg-white p-2 text-sm"
+                    className="rounded-md border border-gray-300 bg-white p-2 text-sm text-black shadow-sm"
                   >
                     {card.title}
                   </div>
@@ -269,3 +269,4 @@ export function PipelineBoard({
     </main>
   );
 }
+
