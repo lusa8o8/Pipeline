@@ -30,7 +30,7 @@ export default function SignInPage() {
       return;
     }
 
-    router.push("/dashboard");
+    router.push("/today");
     router.refresh();
   };
 
@@ -87,3 +87,4 @@ export default function SignInPage() {
     </main>
   );
 }
+

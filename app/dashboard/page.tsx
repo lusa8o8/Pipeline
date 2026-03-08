@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { SignOutButton } from "./_components/sign-out-button";
+import { AppNav } from "@/app/_components/app-nav";
 import { DashboardClient } from "./_components/dashboard-client";
 
 type Goal = {
@@ -55,10 +55,7 @@ export default async function DashboardPage() {
 
   return (
     <main className="min-h-screen">
-      <nav className="flex justify-end gap-4 border-b border-gray-200 p-4 text-sm">
-        <span>{user.email}</span>
-        <SignOutButton />
-      </nav>
+      <AppNav email={user.email} />
       <DashboardClient initialDreams={dreams} />
     </main>
   );

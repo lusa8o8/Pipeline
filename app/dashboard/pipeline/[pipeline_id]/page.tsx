@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { AppNav } from "@/app/_components/app-nav";
 import { PipelineBoard } from "../pipeline-board";
 
 type Card = {
@@ -11,6 +12,7 @@ type Card = {
   title: string;
   status: "backlog" | "ready" | "doing" | "done";
   position: number;
+  focused_at: string | null;
   created_at: string;
 };
 
@@ -64,7 +66,7 @@ export default async function PipelinePage({ params }: PageProps) {
   const { data: projects, error: projectError } = await supabase
     .from("projects")
     .select(
-      "id,pipeline_id,name,position,created_at,cards(id,stage_id,pipeline_id,user_id,title,status,position,created_at)"
+      "id,pipeline_id,name,position,created_at,cards(id,stage_id,pipeline_id,user_id,title,status,position,focused_at,created_at)"
     )
     .eq("pipeline_id", pipeline.id)
     .order("position", { ascending: true });
@@ -79,11 +81,14 @@ export default async function PipelinePage({ params }: PageProps) {
   }));
 
   return (
-    <PipelineBoard
-      pipelineId={pipeline.id}
-      dreamTitle={dream.title}
-      goalOutcome={dream.goals?.[0]?.outcome ?? "No goal found."}
-      initialProjects={normalizedProjects}
-    />
+    <main className="min-h-screen">
+      <AppNav email={user.email} />
+      <PipelineBoard
+        pipelineId={pipeline.id}
+        dreamTitle={dream.title}
+        goalOutcome={dream.goals?.[0]?.outcome ?? "No goal found."}
+        initialProjects={normalizedProjects}
+      />
+    </main>
   );
 }

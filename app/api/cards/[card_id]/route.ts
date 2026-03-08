@@ -49,12 +49,14 @@ export async function PATCH(
     return NextResponse.json({ message: countError.message }, { status: 500 });
   }
 
+  const focusedAt = status === "doing" ? new Date().toISOString() : null;
+
   const { data, error } = await supabase
     .from("cards")
-    .update({ status, position: count ?? 0 })
+    .update({ status, position: count ?? 0, focused_at: focusedAt })
     .eq("id", card.id)
     .eq("user_id", user.id)
-    .select("id,stage_id,pipeline_id,user_id,title,position,status,created_at")
+    .select("id,stage_id,pipeline_id,user_id,title,position,status,focused_at,created_at")
     .single();
 
   if (error) {
