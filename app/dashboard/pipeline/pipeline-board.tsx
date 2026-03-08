@@ -40,6 +40,7 @@ export function PipelineBoard({
   const [error, setError] = useState<string | null>(null);
   const [savingCard, setSavingCard] = useState(false);
   const [movingCardId, setMovingCardId] = useState<string | null>(null);
+  const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
 
   const stageMap = useMemo(() => {
     const map = new Map<string, Stage>();
@@ -101,6 +102,10 @@ export function PipelineBoard({
     }
   };
 
+  const handleDragStart = (card: Card) => {
+    setDraggedCardId(card.id);
+  };
+
   const onDropCard = async (targetStageId: string, cardId: string) => {
     const targetStage = stageMap.get(targetStageId);
     if (!targetStage) {
@@ -151,6 +156,7 @@ export function PipelineBoard({
 
     const data = (await response.json()) as { card?: Card; message?: string };
     setMovingCardId(null);
+    setDraggedCardId(null);
 
     if (!response.ok || !data.card) {
       setStages(snapshot);
@@ -185,7 +191,7 @@ export function PipelineBoard({
             onDragOver={(event) => event.preventDefault()}
             onDrop={(event) => {
               event.preventDefault();
-              const cardId = event.dataTransfer.getData("text/plain");
+              const cardId = event.dataTransfer.getData("text/plain") || draggedCardId;
               if (!cardId) {
                 return;
               }
@@ -195,7 +201,7 @@ export function PipelineBoard({
           >
             <h2 className="text-lg font-medium">{stage.name}</h2>
 
-            <div className="mt-3 space-y-2" data-testid={`cards-${stage.id}`}>
+            <div className="mt-3 space-y-2">
               {stage.cards
                 .slice()
                 .sort((a, b) => a.position - b.position)
@@ -203,10 +209,8 @@ export function PipelineBoard({
                   <div
                     key={card.id}
                     draggable
-                    onDragStart={(event) => {
-                      event.dataTransfer.setData("text/plain", card.id);
-                    }}
-                    className="rounded-md border border-gray-300 bg-white p-2 text-sm text-black shadow-sm"
+                    onDragStart={() => handleDragStart(card)}
+                    className="bg-white text-black rounded px-3 py-2 text-sm cursor-grab shadow-sm"
                   >
                     {card.title}
                   </div>
@@ -221,7 +225,7 @@ export function PipelineBoard({
                     value={newCardTitle}
                     onChange={(event) => setNewCardTitle(event.target.value)}
                     onKeyDown={(event) => onCardKeyDown(event, stage.id)}
-                    className="w-full rounded border border-gray-300 px-2 py-1 text-sm placeholder:text-gray-400 text-black"
+                    className="w-full rounded border-2 border-dashed border-gray-400 bg-gray-50 px-2 py-1 text-sm placeholder:text-gray-400 text-black"
                     placeholder="Card title"
                     autoFocus
                   />
@@ -269,4 +273,3 @@ export function PipelineBoard({
     </main>
   );
 }
-
