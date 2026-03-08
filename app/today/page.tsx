@@ -34,36 +34,58 @@ export default async function TodayPage() {
     .limit(1)
     .maybeSingle();
 
+  const { data: activeDreams } = await supabase
+    .from("dreams")
+    .select("id,title")
+    .eq("user_id", user.id)
+    .eq("status", "active");
+
+  const activeDreamIds = (activeDreams ?? []).map((dream) => dream.id);
+
+  if (activeDreamIds.length === 0) {
+    return (
+      <main className="min-h-screen">
+        <AppNav email={user.email} />
+        <TodayClient initialItems={[]} activeDreamTitle={activeDream?.title ?? "No active dream"} />
+      </main>
+    );
+  }
+
+  const { data: activePipelines } = await supabase
+    .from("pipelines")
+    .select("id,dream_id")
+    .eq("user_id", user.id)
+    .in("dream_id", activeDreamIds);
+
+  const activePipelineIds = (activePipelines ?? []).map((pipeline) => pipeline.id);
+
+  if (activePipelineIds.length === 0) {
+    return (
+      <main className="min-h-screen">
+        <AppNav email={user.email} />
+        <TodayClient initialItems={[]} activeDreamTitle={activeDream?.title ?? "No active dream"} />
+      </main>
+    );
+  }
+
   const { data: cards } = await supabase
     .from("cards")
     .select("id,title,status,focused_at,stage_id,pipeline_id")
     .eq("user_id", user.id)
     .eq("status", "doing")
+    .in("pipeline_id", activePipelineIds)
     .order("focused_at", { ascending: true, nullsFirst: false });
 
   const projectIds = Array.from(new Set((cards ?? []).map((card) => card.stage_id)));
-  const pipelineIds = Array.from(new Set((cards ?? []).map((card) => card.pipeline_id)));
 
   const { data: projects } = await supabase
     .from("projects")
     .select("id,name")
     .in("id", projectIds.length > 0 ? projectIds : ["00000000-0000-0000-0000-000000000000"]);
 
-  const { data: pipelines } = await supabase
-    .from("pipelines")
-    .select("id,dream_id")
-    .in("id", pipelineIds.length > 0 ? pipelineIds : ["00000000-0000-0000-0000-000000000000"]);
-
-  const dreamIds = Array.from(new Set((pipelines ?? []).map((pipeline) => pipeline.dream_id)));
-
-  const { data: dreams } = await supabase
-    .from("dreams")
-    .select("id,title")
-    .in("id", dreamIds.length > 0 ? dreamIds : ["00000000-0000-0000-0000-000000000000"]);
-
   const projectMap = new Map((projects ?? []).map((project) => [project.id, project.name]));
-  const pipelineMap = new Map((pipelines ?? []).map((pipeline) => [pipeline.id, pipeline]));
-  const dreamMap = new Map((dreams ?? []).map((dream) => [dream.id, dream.title]));
+  const pipelineMap = new Map((activePipelines ?? []).map((pipeline) => [pipeline.id, pipeline]));
+  const dreamMap = new Map((activeDreams ?? []).map((dream) => [dream.id, dream.title]));
 
   const todayItems: TodayItem[] = (cards ?? []).map((card) => {
     const pipeline = pipelineMap.get(card.pipeline_id);
@@ -88,4 +110,3 @@ export default async function TodayPage() {
     </main>
   );
 }
-
