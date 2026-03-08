@@ -55,10 +55,11 @@ export default async function DashboardPage() {
   const dreams = (data ?? []) as Dream[];
 
   return (
-    <main className="min-h-screen">
-      <AppNav email={user.email} />
-      <DashboardClient initialDreams={dreams} />
+    <main className="flex min-h-screen bg-[#080808] text-white">
+      <AppNav email={user.email} activeDreamTitle={dreams[0]?.title ?? "No active dream"} />
+      <div className="flex-1"><DashboardClient initialDreams={dreams} /></div>
     </main>
   );
 }
+
 

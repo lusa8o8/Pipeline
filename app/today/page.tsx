@@ -44,9 +44,9 @@ export default async function TodayPage() {
 
   if (activeDreamIds.length === 0) {
     return (
-      <main className="min-h-screen">
-        <AppNav email={user.email} />
-        <TodayClient initialItems={[]} activeDreamTitle={activeDream?.title ?? "No active dream"} />
+      <main className="flex min-h-screen bg-[#080808] text-white">
+        <AppNav email={user.email} activeDreamTitle={activeDream?.title ?? "No active dream"} />
+        <div className="flex-1"><TodayClient initialItems={[]} activeDreamTitle={activeDream?.title ?? "No active dream"} /></div>
       </main>
     );
   }
@@ -61,9 +61,9 @@ export default async function TodayPage() {
 
   if (activePipelineIds.length === 0) {
     return (
-      <main className="min-h-screen">
-        <AppNav email={user.email} />
-        <TodayClient initialItems={[]} activeDreamTitle={activeDream?.title ?? "No active dream"} />
+      <main className="flex min-h-screen bg-[#080808] text-white">
+        <AppNav email={user.email} activeDreamTitle={activeDream?.title ?? "No active dream"} />
+        <div className="flex-1"><TodayClient initialItems={[]} activeDreamTitle={activeDream?.title ?? "No active dream"} /></div>
       </main>
     );
   }
@@ -104,9 +104,10 @@ export default async function TodayPage() {
   });
 
   return (
-    <main className="min-h-screen">
-      <AppNav email={user.email} />
-      <TodayClient initialItems={todayItems} activeDreamTitle={activeDream?.title ?? "No active dream"} />
+    <main className="flex min-h-screen bg-[#080808] text-white">
+      <AppNav email={user.email} activeDreamTitle={activeDream?.title ?? "No active dream"} />
+      <div className="flex-1"><TodayClient initialItems={todayItems} activeDreamTitle={activeDream?.title ?? "No active dream"} /></div>
     </main>
   );
 }
+

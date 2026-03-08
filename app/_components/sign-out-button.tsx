@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -14,7 +14,10 @@ export function SignOutButton() {
   };
 
   return (
-    <button onClick={onSignOut} className="rounded border border-gray-300 px-3 py-1 text-sm">
+    <button
+      onClick={onSignOut}
+      className="rounded border border-[#2A2A2A] px-3 py-1 text-[11px] text-[#333] hover:border-[#333] hover:text-[#555]"
+    >
       Sign out
     </button>
   );

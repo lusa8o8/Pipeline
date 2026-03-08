@@ -293,27 +293,23 @@ export function PipelineBoard({
       setError(data.message ?? "Failed to delete card.");
     }
   };
-  return (
-    <main className="min-h-screen p-6">
-      <h1 className="text-2xl font-semibold">{dreamTitle}</h1>
-      <p className="mt-2 text-gray-700">{goalOutcome}</p>
-      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
-      <section className="mt-6 rounded border border-gray-300 p-4">
+  return (
+    <main className="min-h-screen p-10">
+      <h1 className="serif-heading text-4xl text-white">{dreamTitle}</h1>
+      <p className="mt-2 text-sm text-[#555]">{goalOutcome}</p>
+      {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
+
+      <section className="mt-6 rounded-lg border border-[#1E1E1E] bg-[#111] p-4">
         <div className="flex items-center gap-3">
-          <div className="relative flex-1 bg-gray-700 rounded h-4">
-            <div
-              className="bg-white rounded h-4"
-              style={{ width: `${percentComplete}%` }}
-            />
+          <div className="relative h-1 flex-1 rounded bg-[#1A1A1A]">
+            <div className="h-1 rounded bg-white" style={{ width: `${percentComplete}%` }} />
           </div>
-          <span className="text-white text-xs font-medium w-10 text-right">
-            {percentComplete}%
-          </span>
+          <span className="w-10 text-right text-xs font-medium text-white">{percentComplete}%</span>
         </div>
 
         {bottlenecks.length > 0 && (
-          <div className="mt-4 space-y-2 text-sm text-orange-700">
+          <div className="mt-4 space-y-2 text-sm text-orange-300">
             {bottlenecks.map((bottleneck) => (
               <p key={`${bottleneck.project_name}-${bottleneck.type}`}>
                 {bottleneck.type === "stuck_in_doing"
@@ -326,8 +322,8 @@ export function PipelineBoard({
       </section>
 
       <div className="mt-6 flex gap-4">
-        <aside className="w-56 rounded border border-gray-300 p-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-600">Projects</h2>
+        <aside className="w-56 rounded border border-[#1E1E1E] bg-[#111] p-3">
+          <h2 className="text-[11px] uppercase tracking-[1.5px] text-[#444]">Projects</h2>
           <div className="mt-3 space-y-2">
             {projects.map((project) => (
               <button
@@ -338,10 +334,10 @@ export function PipelineBoard({
                   setAddCardStatus(null);
                   setNewCardTitle("");
                 }}
-                className={`w-full rounded px-3 py-2 text-left text-sm ${
+                className={`w-full rounded px-3 py-2 text-left text-sm transition-colors ${
                   selectedProjectId === project.id
-                    ? "bg-black text-white"
-                    : "border border-gray-300 bg-white text-black"
+                    ? "border border-[#2A2A2A] bg-[#1A1A1A] text-white"
+                    : "border border-[#1E1E1E] bg-[#111] text-[#555] hover:border-[#333]"
                 }`}
               >
                 {project.name}
@@ -352,110 +348,123 @@ export function PipelineBoard({
 
         <section className="min-w-0 flex-1 overflow-x-auto">
           <div className="flex min-w-[1040px] gap-4 pb-4">
-            {STATUSES.map(({ key, label }) => (
-              <div
-                key={key}
-                className="min-h-[360px] min-w-[250px] rounded border border-gray-300 p-3"
-                onDragOver={(event) => event.preventDefault()}
-                onDrop={(event) => {
-                  event.preventDefault();
-                  const cardId = event.dataTransfer.getData("text/plain") || draggedCardId;
-                  if (!cardId) {
-                    return;
-                  }
+            {STATUSES.map(({ key, label }) => {
+              const cards = cardsByStatus(key);
 
-                  void onDropCard(key, cardId);
-                }}
-              >
-                <h3 className="text-sm font-semibold">{label}</h3>
+              return (
+                <div
+                  key={key}
+                  className="min-h-[360px] min-w-[250px] rounded border border-[#1E1E1E] bg-[#111] p-3"
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={(event) => {
+                    event.preventDefault();
+                    const cardId = event.dataTransfer.getData("text/plain") || draggedCardId;
+                    if (!cardId) {
+                      return;
+                    }
 
-                <div className="mt-3 space-y-2">
-                  {cardsByStatus(key).map((card) => (
-                    <div
-                      key={card.id}
-                      draggable
-                      onDragStart={(event) => {
-                        event.dataTransfer.setData("text/plain", card.id);
-                        handleDragStart(card);
-                      }}
-                      className="group relative bg-white text-black rounded px-3 py-2 text-sm cursor-grab shadow-sm border border-gray-200"
-                    >
+                    void onDropCard(key, cardId);
+                  }}
+                >
+                  <div
+                    className={`mb-3 flex items-center justify-between border-b pb-2 ${
+                      key === "doing" ? "border-[#2A2A2A]" : "border-[#1A1A1A]"
+                    }`}
+                  >
+                    <h3 className="text-[11px] uppercase tracking-[1.5px] text-[#444]">{label}</h3>
+                    <span className="rounded-full bg-[#1A1A1A] px-2 py-0.5 text-[10px] text-[#333]">
+                      {cards.length}
+                    </span>
+                  </div>
+
+                  <div className="space-y-2">
+                    {cards.map((card) => (
+                      <div
+                        key={card.id}
+                        draggable
+                        onDragStart={(event) => {
+                          event.dataTransfer.setData("text/plain", card.id);
+                          handleDragStart(card);
+                        }}
+                        className={`group relative rounded border px-3 py-2 text-[12px] leading-5 cursor-grab ${
+                          key === "done"
+                            ? "border-[#1A1A1A] bg-[#0D0D0D] text-[#555] opacity-60"
+                            : "border-[#1A1A1A] bg-[#111] text-[#DDD]"
+                        }`}
+                      >
+                        <button
+                          type="button"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            void onDeleteCard(card.id);
+                          }}
+                          disabled={deletingCardId === card.id}
+                          className="absolute right-1 top-1 hidden h-5 w-5 items-center justify-center rounded text-xs text-[#555] hover:bg-[#1A1A1A] hover:text-[#DDD] group-hover:flex disabled:opacity-50"
+                          aria-label="Delete card"
+                        >
+                          ×
+                        </button>
+                        <span className="pr-6">{card.title}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4">
+                    {addCardStatus === key ? (
+                      <div className="space-y-2">
+                        <input
+                          type="text"
+                          value={newCardTitle}
+                          onChange={(event) => setNewCardTitle(event.target.value)}
+                          onKeyDown={(event) => onCardKeyDown(event, key)}
+                          className="w-full rounded border border-dashed border-[#1A1A1A] bg-transparent px-3 py-2 text-sm text-[#DDD] placeholder:text-[#555]"
+                          placeholder="Card title"
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => void onAddCard(key)}
+                            disabled={savingCard}
+                            className="rounded-md bg-white px-3 py-1 text-sm text-black disabled:opacity-50"
+                          >
+                            Save
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setAddCardStatus(null);
+                              setNewCardTitle("");
+                              setError(null);
+                            }}
+                            className="rounded-md border border-[#2A2A2A] px-3 py-1 text-sm text-[#555]"
+                          >
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
                       <button
                         type="button"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          void onDeleteCard(card.id);
+                        onClick={() => {
+                          setAddCardStatus(key);
+                          setNewCardTitle("");
+                          setError(null);
                         }}
-                        disabled={deletingCardId === card.id}
-                        className="absolute right-1 top-1 hidden h-5 w-5 items-center justify-center rounded text-xs text-gray-600 hover:bg-gray-200 hover:text-black group-hover:flex disabled:opacity-50"
-                        aria-label="Delete card"
+                        className="w-full rounded border border-dashed border-[#1A1A1A] px-3 py-2 text-sm text-[#333]"
                       >
-                        ×
+                        + Add card
                       </button>
-                      <span className="pr-6">{card.title}</span>
-                    </div>
-                  ))}
+                    )}
+                  </div>
                 </div>
-
-                <div className="mt-4">
-                  {addCardStatus === key ? (
-                    <div className="space-y-2">
-                      <input
-                        type="text"
-                        value={newCardTitle}
-                        onChange={(event) => setNewCardTitle(event.target.value)}
-                        onKeyDown={(event) => onCardKeyDown(event, key)}
-                        className="w-full bg-transparent border border-dashed border-gray-500 rounded px-3 py-2 text-sm text-black placeholder:text-gray-400"
-                        placeholder="Card title"
-                        autoFocus
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => void onAddCard(key)}
-                          disabled={savingCard}
-                          className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50"
-                        >
-                          Save
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setAddCardStatus(null);
-                            setNewCardTitle("");
-                            setError(null);
-                          }}
-                          className="rounded border border-gray-300 px-3 py-1 text-sm"
-                        >
-                          Cancel
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAddCardStatus(key);
-                        setNewCardTitle("");
-                        setError(null);
-                      }}
-                      className="rounded border border-gray-300 px-3 py-1 text-sm"
-                    >
-                      + Add card
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </section>
       </div>
 
-      {movingCardId && <p className="text-sm text-gray-600">Moving card...</p>}
+      {movingCardId && <p className="mt-2 text-sm text-[#555]">Moving card...</p>}
     </main>
   );
 }
-
-
-
-

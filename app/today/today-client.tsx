@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type TodayItem = {
   card_id: string;
@@ -22,6 +22,20 @@ export function TodayClient({ initialItems, activeDreamTitle }: TodayClientProps
   const [items, setItems] = useState<TodayItem[]>(initialItems);
   const [loadingCardId, setLoadingCardId] = useState<string | null>(null);
 
+  const totalToday = initialItems.length;
+  const completedToday = totalToday - items.length;
+
+  const overallPercent = useMemo(() => {
+    if (totalToday === 0) {
+      return 0;
+    }
+
+    return Math.floor((completedToday / totalToday) * 100);
+  }, [completedToday, totalToday]);
+
+  const usedSlots = Math.min(items.length, 5);
+  const remainingSlots = Math.max(5 - usedSlots, 0);
+
   const markDone = async (cardId: string) => {
     setLoadingCardId(cardId);
 
@@ -41,32 +55,74 @@ export function TodayClient({ initialItems, activeDreamTitle }: TodayClientProps
   };
 
   return (
-    <section className="p-6">
-      <h1 className="text-2xl font-semibold">Today&apos;s Focus</h1>
-      <p className="mt-1 text-sm text-gray-600">{activeDreamTitle || "No active dream"}</p>
+    <section className="mx-auto w-full max-w-4xl p-12">
+      <header className="mb-10">
+        <p className="mb-3 text-[11px] uppercase tracking-[1.5px] text-[#444]">
+          {new Date().toLocaleDateString("en-US", {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+          })}
+        </p>
+        <h1 className="serif-heading text-5xl leading-none text-white">Today&apos;s Focus</h1>
+        <p className="mt-3 text-[13px] text-[#555]">
+          {usedSlots} of 5 slots used - move a card to Doing to add tasks
+        </p>
+      </header>
+
+      <section className="mb-10 rounded-lg border border-[#1E1E1E] bg-[#111] px-6 py-5">
+        <div className="mb-4 flex items-end justify-between">
+          <div>
+            <p className="mb-1 text-[10px] uppercase tracking-[1px] text-[#444]">Today</p>
+            <p className="serif-heading text-[22px] text-white">
+              {completedToday} / {totalToday}
+            </p>
+            <p className="text-[11px] text-[#555]">tasks completed</p>
+          </div>
+          <div className="text-right">
+            <p className="mb-1 text-[10px] uppercase tracking-[1px] text-[#444]">Overall</p>
+            <p className="serif-heading text-[22px] text-white">{overallPercent}%</p>
+            <p className="text-[11px] text-[#555]">goal progress</p>
+          </div>
+        </div>
+        <div className="h-1 overflow-hidden rounded bg-[#1A1A1A]">
+          <div className="h-1 rounded bg-white" style={{ width: `${overallPercent}%` }} />
+        </div>
+      </section>
 
       {items.length === 0 ? (
-        <p className="mt-6">Nothing in focus. Go to a pipeline and move a card to Doing.</p>
+        <p className="rounded-lg border border-dashed border-[#1A1A1A] px-6 py-5 text-[13px] text-[#555]">
+          Nothing in focus. Go to a pipeline and move a card to Doing.
+        </p>
       ) : (
-        <div className="mt-6 space-y-3">
-          {items.map((item) => (
-            <div key={item.card_id} className="flex items-center justify-between rounded border border-gray-300 p-3">
-              <div>
-                <p className="font-semibold">{item.card_title}</p>
-                <p className="text-sm text-gray-600">
-                  {item.project_name} • {item.dream_title}
+        <div className="space-y-2">
+          {items.map((item, index) => (
+            <div
+              key={item.card_id}
+              className="flex items-start gap-4 rounded-lg border border-[#1E1E1E] bg-[#111] px-6 py-5"
+            >
+              <div className="min-w-6 pt-0.5 text-[12px] text-[#333]">
+                {String(index + 1).padStart(2, "0")}
+              </div>
+              <div className="flex-1">
+                <p className="text-[14px] text-[#DDD]">{item.card_title}</p>
+                <p className="mt-1 text-[11px] text-[#444]">
+                  {item.project_name} - {item.dream_title || activeDreamTitle}
                 </p>
               </div>
               <button
                 type="button"
                 onClick={() => void markDone(item.card_id)}
                 disabled={loadingCardId === item.card_id}
-                className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50"
+                className="rounded-md border border-[#2A2A2A] bg-[#1A1A1A] px-3 py-1.5 text-[11px] text-[#DDD] disabled:opacity-40"
               >
                 Mark Done
               </button>
             </div>
           ))}
+          <div className="rounded-lg border border-dashed border-[#1A1A1A] px-6 py-4 text-center text-[11px] text-[#333]">
+            + {remainingSlots} more slots available - go to a project and move cards to Doing
+          </div>
         </div>
       )}
     </section>
