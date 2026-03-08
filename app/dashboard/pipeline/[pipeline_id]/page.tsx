@@ -40,7 +40,7 @@ export default async function PipelinePage({ params }: PageProps) {
 
   const { data: pipeline, error: pipelineError } = await supabase
     .from("pipelines")
-    .select("id,dream_id,user_id,created_at")
+    .select("id,dream_id,user_id,goal_target,created_at")
     .eq("id", params.pipeline_id)
     .eq("user_id", user.id)
     .single();
@@ -62,7 +62,9 @@ export default async function PipelinePage({ params }: PageProps) {
 
   const { data: stages, error: stageError } = await supabase
     .from("stages")
-    .select("id,pipeline_id,name,position,created_at,cards(id,stage_id,pipeline_id,user_id,title,position,created_at)")
+    .select(
+      "id,pipeline_id,name,position,created_at,cards(id,stage_id,pipeline_id,user_id,title,position,created_at)"
+    )
     .eq("pipeline_id", pipeline.id)
     .order("position", { ascending: true });
 
@@ -75,12 +77,16 @@ export default async function PipelinePage({ params }: PageProps) {
     cards: [...(stage.cards ?? [])].sort((a, b) => a.position - b.position),
   }));
 
+  const finalStage = [...normalizedStages].sort((a, b) => b.position - a.position)[0];
+
   return (
     <PipelineBoard
       pipelineId={pipeline.id}
       dreamTitle={dream.title}
       goalOutcome={dream.goals?.[0]?.outcome ?? "No goal found."}
       initialStages={normalizedStages}
+      initialGoalTarget={pipeline.goal_target}
+      initialFinalStageId={finalStage?.id ?? null}
     />
   );
 }

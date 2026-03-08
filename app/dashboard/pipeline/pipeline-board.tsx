@@ -26,6 +26,8 @@ type PipelineBoardProps = {
   dreamTitle: string;
   goalOutcome: string;
   initialStages: Stage[];
+  initialGoalTarget: number;
+  initialFinalStageId: string | null;
 };
 
 export function PipelineBoard({
@@ -33,6 +35,8 @@ export function PipelineBoard({
   dreamTitle,
   goalOutcome,
   initialStages,
+  initialGoalTarget,
+  initialFinalStageId,
 }: PipelineBoardProps) {
   const [stages, setStages] = useState<Stage[]>(initialStages);
   const [addCardStageId, setAddCardStageId] = useState<string | null>(null);
@@ -41,6 +45,12 @@ export function PipelineBoard({
   const [savingCard, setSavingCard] = useState(false);
   const [movingCardId, setMovingCardId] = useState<string | null>(null);
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
+  const [goalTarget, setGoalTarget] = useState<number>(initialGoalTarget);
+  const [goalTargetInput, setGoalTargetInput] = useState<string>(
+    String(initialGoalTarget || 10)
+  );
+  const [settingGoalTarget, setSettingGoalTarget] = useState(false);
+  const [hasSetGoalTarget, setHasSetGoalTarget] = useState(initialGoalTarget !== 10);
 
   const stageMap = useMemo(() => {
     const map = new Map<string, Stage>();
@@ -49,6 +59,64 @@ export function PipelineBoard({
     }
     return map;
   }, [stages]);
+
+  const finalStageId = useMemo(() => {
+    if (initialFinalStageId && stageMap.has(initialFinalStageId)) {
+      return initialFinalStageId;
+    }
+
+    const sorted = [...stages].sort((a, b) => b.position - a.position);
+    return sorted[0]?.id ?? null;
+  }, [initialFinalStageId, stageMap, stages]);
+
+  const finalStageCardCount = useMemo(() => {
+    if (!finalStageId) {
+      return 0;
+    }
+
+    return stageMap.get(finalStageId)?.cards.length ?? 0;
+  }, [finalStageId, stageMap]);
+
+  const percentComplete = useMemo(() => {
+    if (goalTarget <= 0) {
+      return 0;
+    }
+
+    return Math.min(100, Math.floor((finalStageCardCount / goalTarget) * 100));
+  }, [finalStageCardCount, goalTarget]);
+
+  const onSetGoalTarget = async () => {
+    const parsed = Number(goalTargetInput);
+    if (!Number.isInteger(parsed) || parsed <= 0) {
+      setError("Goal target must be a positive number.");
+      return;
+    }
+
+    setSettingGoalTarget(true);
+    setError(null);
+
+    const response = await fetch(`/api/pipelines/${pipelineId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ goal_target: parsed }),
+    });
+
+    const data = (await response.json()) as {
+      pipeline?: { goal_target: number };
+      message?: string;
+    };
+
+    setSettingGoalTarget(false);
+
+    if (!response.ok || !data.pipeline) {
+      setError(data.message ?? "Failed to set goal target.");
+      return;
+    }
+
+    setGoalTarget(data.pipeline.goal_target);
+    setGoalTargetInput(String(data.pipeline.goal_target));
+    setHasSetGoalTarget(true);
+  };
 
   const onAddCard = async (stageId: string) => {
     const title = newCardTitle.trim();
@@ -182,6 +250,38 @@ export function PipelineBoard({
       <h1 className="text-2xl font-semibold">{dreamTitle}</h1>
       <p className="mt-2 text-gray-700">{goalOutcome}</p>
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
+
+      <section className="mt-6 rounded border border-gray-300 p-4">
+        {!hasSetGoalTarget && goalTarget === 10 ? (
+          <div className="flex flex-wrap items-center gap-3">
+            <p className="text-sm">How many {goalOutcome} = goal complete?</p>
+            <input
+              type="number"
+              min={1}
+              value={goalTargetInput}
+              onChange={(event) => setGoalTargetInput(event.target.value)}
+              className="w-24 rounded border border-gray-300 px-2 py-1 text-sm placeholder:text-gray-400 text-black"
+            />
+            <button
+              type="button"
+              onClick={() => void onSetGoalTarget()}
+              disabled={settingGoalTarget}
+              className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50"
+            >
+              Set
+            </button>
+          </div>
+        ) : (
+          <div>
+            <p className="text-sm font-medium">
+              {finalStageCardCount} / {goalTarget} - {percentComplete}% complete
+            </p>
+            <div className="mt-2 h-2 w-full rounded bg-gray-200">
+              <div className="h-2 rounded bg-black" style={{ width: `${percentComplete}%` }} />
+            </div>
+          </div>
+        )}
+      </section>
 
       <div className="mt-6 flex gap-4 overflow-x-auto pb-4">
         {stages.map((stage) => (
