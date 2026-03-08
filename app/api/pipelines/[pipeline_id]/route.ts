@@ -3,6 +3,12 @@ import { createClient } from "@/lib/supabase/server";
 
 type Params = { params: { pipeline_id: string } };
 
+type Bottleneck = {
+  project_name: string;
+  type: "stuck_in_doing" | "never_started";
+  card_count: number;
+};
+
 export async function GET(_request: Request, { params }: Params) {
   const supabase = createClient();
   const {
@@ -52,10 +58,35 @@ export async function GET(_request: Request, { params }: Params) {
     cards: [...(project.cards ?? [])].sort((a, b) => a.position - b.position),
   }));
 
+  const bottlenecks: Bottleneck[] = [];
+
+  for (const project of normalizedProjects) {
+    const doingCount = project.cards.filter((card) => card.status === "doing").length;
+    const doneCount = project.cards.filter((card) => card.status === "done").length;
+    const backlogCount = project.cards.filter((card) => card.status === "backlog").length;
+
+    if (doingCount >= 3 && doneCount === 0) {
+      bottlenecks.push({
+        project_name: project.name,
+        type: "stuck_in_doing",
+        card_count: doingCount,
+      });
+    }
+
+    if (backlogCount >= 5 && doingCount === 0) {
+      bottlenecks.push({
+        project_name: project.name,
+        type: "never_started",
+        card_count: backlogCount,
+      });
+    }
+  }
+
   return NextResponse.json({
     pipeline,
     dream_title: dream.title,
     goal_outcome: dream.goals?.[0]?.outcome ?? "No goal found.",
     projects: normalizedProjects,
+    bottlenecks,
   });
 }

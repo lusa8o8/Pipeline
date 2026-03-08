@@ -4,6 +4,12 @@ import { KeyboardEvent, useMemo, useState } from "react";
 
 type CardStatus = "backlog" | "ready" | "doing" | "done";
 
+type Bottleneck = {
+  project_name: string;
+  type: "stuck_in_doing" | "never_started";
+  card_count: number;
+};
+
 const STATUSES: Array<{ key: CardStatus; label: string }> = [
   { key: "backlog", label: "Backlog" },
   { key: "ready", label: "Ready" },
@@ -81,6 +87,34 @@ export function PipelineBoard({
 
     return Math.floor((doneCards / totalCards) * 100);
   }, [doneCards, totalCards]);
+
+  const bottlenecks = useMemo(() => {
+    const items: Bottleneck[] = [];
+
+    for (const project of projects) {
+      const doingCount = project.cards.filter((card) => card.status === "doing").length;
+      const doneCount = project.cards.filter((card) => card.status === "done").length;
+      const backlogCount = project.cards.filter((card) => card.status === "backlog").length;
+
+      if (doingCount >= 3 && doneCount === 0) {
+        items.push({
+          project_name: project.name,
+          type: "stuck_in_doing",
+          card_count: doingCount,
+        });
+      }
+
+      if (backlogCount >= 5 && doingCount === 0) {
+        items.push({
+          project_name: project.name,
+          type: "never_started",
+          card_count: backlogCount,
+        });
+      }
+    }
+
+    return items;
+  }, [projects]);
 
   const onAddCard = async (status: CardStatus) => {
     if (!selectedProject) {
@@ -242,6 +276,18 @@ export function PipelineBoard({
         <div className="mt-2 h-2 w-full rounded bg-gray-200">
           <div className="h-2 rounded bg-black" style={{ width: `${percentComplete}%` }} />
         </div>
+
+        {bottlenecks.length > 0 && (
+          <div className="mt-4 space-y-2 text-sm text-orange-700">
+            {bottlenecks.map((bottleneck) => (
+              <p key={`${bottleneck.project_name}-${bottleneck.type}`}>
+                {bottleneck.type === "stuck_in_doing"
+                  ? `?? "${bottleneck.project_name}" has ${bottleneck.card_count} tasks stuck in Doing with nothing completed.`
+                  : `?? "${bottleneck.project_name}" has ${bottleneck.card_count} tasks in Backlog with nothing in progress.`}
+              </p>
+            ))}
+          </div>
+        )}
       </section>
 
       <div className="mt-6 flex gap-4">
