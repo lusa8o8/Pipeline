@@ -161,6 +161,24 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     }
   };
 
+  const onArchiveDream = async (dreamId: string) => {
+    setError(null);
+
+    const response = await fetch(`/api/dreams/${dreamId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ status: "archived" }),
+    });
+
+    const data = (await response.json()) as { message?: string };
+
+    if (!response.ok) {
+      setError(data.message ?? "Failed to archive dream.");
+      return;
+    }
+
+    setDreams((current) => current.filter((dream) => dream.id !== dreamId));
+  };
   const onConfirmPipeline = async () => {
     if (!pipelineDream) {
       setError("No dream selected.");
@@ -344,20 +362,29 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
                 <div key={dream.id} className="rounded border border-gray-200 p-4">
                   <p className="font-medium">{dream.title}</p>
                   <p className="mt-2 text-sm text-gray-700">{dream.goals[0]?.outcome ?? "No goal yet."}</p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      if (pipelineId) {
-                        router.push(`/dashboard/pipeline/${pipelineId}`);
-                        return;
-                      }
+                  <div className="mt-3 flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (pipelineId) {
+                          router.push(`/dashboard/pipeline/${pipelineId}`);
+                          return;
+                        }
 
-                      void generatePipeline(dream);
-                    }}
-                    className="mt-3 rounded border border-gray-300 px-3 py-1 text-sm"
-                  >
-                    Open
-                  </button>
+                        void generatePipeline(dream);
+                      }}
+                      className="rounded border border-gray-300 px-3 py-1 text-sm"
+                    >
+                      Open
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => void onArchiveDream(dream.id)}
+                      className="rounded border border-gray-300 px-3 py-1 text-sm"
+                    >
+                      Archive
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -380,4 +407,5 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     </section>
   );
 }
+
 

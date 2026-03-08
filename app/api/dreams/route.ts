@@ -17,6 +17,7 @@ export async function GET() {
       "id,user_id,title,context,status,created_at,goals(id,dream_id,user_id,outcome,created_at),pipelines(id,dream_id,user_id,created_at)"
     )
     .eq("user_id", user.id)
+    .eq("status", "active")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -73,4 +74,3 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ dream: data });
 }
-
