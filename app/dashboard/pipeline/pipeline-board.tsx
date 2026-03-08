@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { KeyboardEvent, useMemo, useState } from "react";
 
@@ -6,7 +6,7 @@ type CardStatus = "backlog" | "ready" | "doing" | "done";
 
 type Bottleneck = {
   project_name: string;
-  type: "stuck_in_doing" | "never_started";
+  type: "stuck_in_doing" | "stuck_in_ready";
   card_count: number;
 };
 
@@ -94,7 +94,7 @@ export function PipelineBoard({
     for (const project of projects) {
       const doingCount = project.cards.filter((card) => card.status === "doing").length;
       const doneCount = project.cards.filter((card) => card.status === "done").length;
-      const backlogCount = project.cards.filter((card) => card.status === "backlog").length;
+      const readyCount = project.cards.filter((card) => card.status === "ready").length;
 
       if (doingCount >= 3 && doneCount === 0) {
         items.push({
@@ -104,11 +104,11 @@ export function PipelineBoard({
         });
       }
 
-      if (backlogCount >= 5 && doingCount === 0) {
+      if (readyCount >= 3 && doingCount === 0) {
         items.push({
           project_name: project.name,
-          type: "never_started",
-          card_count: backlogCount,
+          type: "stuck_in_ready",
+          card_count: readyCount,
         });
       }
     }
@@ -270,10 +270,7 @@ export function PipelineBoard({
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
       <section className="mt-6 rounded border border-gray-300 p-4">
-        <p className="text-sm font-medium">
-          {doneCards} done / {totalCards} total - {percentComplete}% complete
-        </p>
-        <div className="mt-2 h-2 w-full rounded bg-gray-200">
+        <div className="h-2 w-full rounded bg-gray-200">
           <div className="h-2 rounded bg-black" style={{ width: `${percentComplete}%` }} />
         </div>
 
@@ -282,8 +279,8 @@ export function PipelineBoard({
             {bottlenecks.map((bottleneck) => (
               <p key={`${bottleneck.project_name}-${bottleneck.type}`}>
                 {bottleneck.type === "stuck_in_doing"
-                  ? `?? "${bottleneck.project_name}" has ${bottleneck.card_count} tasks stuck in Doing with nothing completed.`
-                  : `?? "${bottleneck.project_name}" has ${bottleneck.card_count} tasks in Backlog with nothing in progress.`}
+                  ? `⚠️ "${bottleneck.project_name}" has ${bottleneck.card_count} tasks stuck in Doing with nothing completed.`
+                  : `⚠️ "${bottleneck.project_name}" has ${bottleneck.card_count} tasks waiting in Ready with nothing in progress.`}
               </p>
             ))}
           </div>
@@ -343,7 +340,7 @@ export function PipelineBoard({
                         event.dataTransfer.setData("text/plain", card.id);
                         handleDragStart(card);
                       }}
-                      className="bg-white text-black rounded px-3 py-2 text-sm cursor-grab shadow-sm"
+                      className="bg-white text-black rounded px-3 py-2 text-sm cursor-grab shadow-sm border border-gray-200"
                     >
                       {card.title}
                     </div>
@@ -358,7 +355,7 @@ export function PipelineBoard({
                         value={newCardTitle}
                         onChange={(event) => setNewCardTitle(event.target.value)}
                         onKeyDown={(event) => onCardKeyDown(event, key)}
-                        className="w-full rounded border border-gray-300 bg-gray-50 px-2 py-1 text-sm placeholder:text-gray-400 text-black"
+                        className="w-full bg-transparent border border-dashed border-gray-500 rounded px-3 py-2 text-sm text-black placeholder:text-gray-400"
                         placeholder="Card title"
                         autoFocus
                       />
@@ -408,3 +405,4 @@ export function PipelineBoard({
     </main>
   );
 }
+
