@@ -261,7 +261,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
                       return next;
                     });
                   }}
-                  className="min-w-56 rounded border border-gray-300 px-3 py-2"
+                  className="min-w-56 rounded border border-gray-300 px-3 py-2 placeholder:text-gray-400 text-black"
                 />
               ))}
             </div>
@@ -336,3 +336,4 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     </section>
   );
 }
+
