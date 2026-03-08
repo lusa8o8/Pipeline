@@ -41,7 +41,7 @@ export default async function PipelinePage({ params }: PageProps) {
 
   const { data: pipeline, error: pipelineError } = await supabase
     .from("pipelines")
-    .select("id,dream_id,user_id,goal_target,created_at")
+    .select("id,dream_id,user_id,created_at")
     .eq("id", params.pipeline_id)
     .eq("user_id", user.id)
     .single();
@@ -78,16 +78,12 @@ export default async function PipelinePage({ params }: PageProps) {
     cards: [...(project.cards ?? [])].sort((a, b) => a.position - b.position),
   }));
 
-  const finalProject = [...normalizedProjects].sort((a, b) => b.position - a.position)[0];
-
   return (
     <PipelineBoard
       pipelineId={pipeline.id}
       dreamTitle={dream.title}
       goalOutcome={dream.goals?.[0]?.outcome ?? "No goal found."}
       initialProjects={normalizedProjects}
-      initialGoalTarget={pipeline.goal_target}
-      initialFinalProjectId={finalProject?.id ?? null}
     />
   );
 }

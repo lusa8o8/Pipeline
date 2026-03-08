@@ -36,8 +36,6 @@ type PipelineBoardProps = {
   dreamTitle: string;
   goalOutcome: string;
   initialProjects: Project[];
-  initialGoalTarget: number;
-  initialFinalProjectId: string | null;
 };
 
 export function PipelineBoard({
@@ -45,8 +43,6 @@ export function PipelineBoard({
   dreamTitle,
   goalOutcome,
   initialProjects,
-  initialGoalTarget,
-  initialFinalProjectId,
 }: PipelineBoardProps) {
   const [projects, setProjects] = useState<Project[]>(initialProjects);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
@@ -58,80 +54,33 @@ export function PipelineBoard({
   const [savingCard, setSavingCard] = useState(false);
   const [movingCardId, setMovingCardId] = useState<string | null>(null);
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
-  const [goalTarget, setGoalTarget] = useState<number>(initialGoalTarget);
-  const [goalTargetInput, setGoalTargetInput] = useState<string>(
-    String(initialGoalTarget || 10)
-  );
-  const [settingGoalTarget, setSettingGoalTarget] = useState(false);
-  const [hasSetGoalTarget, setHasSetGoalTarget] = useState(initialGoalTarget !== 10);
 
   const selectedProject = useMemo(
     () => projects.find((project) => project.id === selectedProjectId) ?? null,
     [projects, selectedProjectId]
   );
 
-  const finalProjectId = useMemo(() => {
-    if (initialFinalProjectId && projects.some((project) => project.id === initialFinalProjectId)) {
-      return initialFinalProjectId;
-    }
+  const totalCards = useMemo(
+    () => projects.reduce((sum, project) => sum + project.cards.length, 0),
+    [projects]
+  );
 
-    const sorted = [...projects].sort((a, b) => b.position - a.position);
-    return sorted[0]?.id ?? null;
-  }, [initialFinalProjectId, projects]);
-
-  const doneCardCount = useMemo(() => {
-    if (!finalProjectId) {
-      return 0;
-    }
-
-    const finalProject = projects.find((project) => project.id === finalProjectId);
-    if (!finalProject) {
-      return 0;
-    }
-
-    return finalProject.cards.filter((card) => card.status === "done").length;
-  }, [projects, finalProjectId]);
+  const doneCards = useMemo(
+    () =>
+      projects.reduce(
+        (sum, project) => sum + project.cards.filter((card) => card.status === "done").length,
+        0
+      ),
+    [projects]
+  );
 
   const percentComplete = useMemo(() => {
-    if (goalTarget <= 0) {
+    if (totalCards === 0) {
       return 0;
     }
 
-    return Math.min(100, Math.floor((doneCardCount / goalTarget) * 100));
-  }, [doneCardCount, goalTarget]);
-
-  const onSetGoalTarget = async () => {
-    const parsed = Number(goalTargetInput);
-    if (!Number.isInteger(parsed) || parsed <= 0) {
-      setError("Goal target must be a positive number.");
-      return;
-    }
-
-    setSettingGoalTarget(true);
-    setError(null);
-
-    const response = await fetch(`/api/pipelines/${pipelineId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ goal_target: parsed }),
-    });
-
-    const data = (await response.json()) as {
-      pipeline?: { goal_target: number };
-      message?: string;
-    };
-
-    setSettingGoalTarget(false);
-
-    if (!response.ok || !data.pipeline) {
-      setError(data.message ?? "Failed to set goal target.");
-      return;
-    }
-
-    setGoalTarget(data.pipeline.goal_target);
-    setGoalTargetInput(String(data.pipeline.goal_target));
-    setHasSetGoalTarget(true);
-  };
+    return Math.floor((doneCards / totalCards) * 100);
+  }, [doneCards, totalCards]);
 
   const onAddCard = async (status: CardStatus) => {
     if (!selectedProject) {
@@ -287,35 +236,12 @@ export function PipelineBoard({
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
       <section className="mt-6 rounded border border-gray-300 p-4">
-        {!hasSetGoalTarget && goalTarget === 10 ? (
-          <div className="flex flex-wrap items-center gap-3">
-            <p className="text-sm">How many outcomes = goal complete?</p>
-            <input
-              type="number"
-              min={1}
-              value={goalTargetInput}
-              onChange={(event) => setGoalTargetInput(event.target.value)}
-              className="w-24 rounded border border-gray-300 px-2 py-1 text-sm placeholder:text-gray-400 text-black"
-            />
-            <button
-              type="button"
-              onClick={() => void onSetGoalTarget()}
-              disabled={settingGoalTarget}
-              className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50"
-            >
-              Set
-            </button>
-          </div>
-        ) : (
-          <div>
-            <p className="text-sm font-medium">
-              {doneCardCount} / {goalTarget} - {percentComplete}% complete
-            </p>
-            <div className="mt-2 h-2 w-full rounded bg-gray-200">
-              <div className="h-2 rounded bg-black" style={{ width: `${percentComplete}%` }} />
-            </div>
-          </div>
-        )}
+        <p className="text-sm font-medium">
+          {doneCards} done / {totalCards} total - {percentComplete}% complete
+        </p>
+        <div className="mt-2 h-2 w-full rounded bg-gray-200">
+          <div className="h-2 rounded bg-black" style={{ width: `${percentComplete}%` }} />
+        </div>
       </section>
 
       <div className="mt-6 flex gap-4">
