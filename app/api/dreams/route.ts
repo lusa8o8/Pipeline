@@ -14,7 +14,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("dreams")
     .select(
-      "id,user_id,title,status,created_at,goals(id,dream_id,user_id,outcome,created_at)"
+      "id,user_id,title,status,created_at,goals(id,dream_id,user_id,outcome,created_at),pipelines(id,dream_id,user_id,created_at)"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });

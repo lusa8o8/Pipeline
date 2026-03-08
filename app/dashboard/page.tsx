@@ -12,6 +12,13 @@ type Goal = {
   created_at: string;
 };
 
+type Pipeline = {
+  id: string;
+  dream_id: string;
+  user_id: string;
+  created_at: string;
+};
+
 type Dream = {
   id: string;
   user_id: string;
@@ -19,6 +26,7 @@ type Dream = {
   status: "active" | "archived";
   created_at: string;
   goals: Goal[];
+  pipelines: Pipeline[];
 };
 
 export default async function DashboardPage() {
@@ -33,7 +41,9 @@ export default async function DashboardPage() {
 
   const { data, error } = await supabase
     .from("dreams")
-    .select("id,user_id,title,status,created_at,goals(id,dream_id,user_id,outcome,created_at)")
+    .select(
+      "id,user_id,title,status,created_at,goals(id,dream_id,user_id,outcome,created_at),pipelines(id,dream_id,user_id,created_at)"
+    )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
