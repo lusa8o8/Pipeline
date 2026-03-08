@@ -30,6 +30,8 @@ export async function GET() {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
+  console.info("[today] user.id:", user?.id);
+
   const { data: activeDreams, error: dreamsError } = await supabase
     .from("dreams")
     .select("id,title")
@@ -42,6 +44,8 @@ export async function GET() {
 
   const activeDreamRows = (activeDreams ?? []) as DreamRow[];
   const activeDreamIds = activeDreamRows.map((dream) => dream.id);
+
+  console.info("[today] activeDreamIds:", activeDreamIds);
 
   if (activeDreamIds.length === 0) {
     console.info("[GET /api/today] no active dreams", { user_id: user.id });
@@ -60,6 +64,8 @@ export async function GET() {
 
   const activePipelineRows = (activePipelines ?? []) as PipelineRow[];
   const activePipelineIds = activePipelineRows.map((pipeline) => pipeline.id);
+
+  console.info("[today] activePipelineIds:", activePipelineIds);
 
   if (activePipelineIds.length === 0) {
     console.info("[GET /api/today] no active pipelines", {
@@ -121,3 +127,4 @@ export async function GET() {
 
   return NextResponse.json({ today });
 }
+
