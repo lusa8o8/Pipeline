@@ -32,6 +32,13 @@ export async function PATCH(
     .single();
 
   if (error) {
+    console.error("[PATCH /api/dreams/[dream_id]] update failed", {
+      dream_id: params.dream_id,
+      user_id: user.id,
+      code: error.code,
+      message: error.message,
+    });
+
     if (error.code === "PGRST116") {
       return NextResponse.json({ message: "Dream not found." }, { status: 404 });
     }
@@ -39,5 +46,11 @@ export async function PATCH(
     return NextResponse.json({ message: error.message }, { status: 500 });
   }
 
+  console.info("[PATCH /api/dreams/[dream_id]] dream archived", {
+    dream_id: params.dream_id,
+    user_id: user.id,
+  });
+
   return NextResponse.json({ dream: data });
 }
+

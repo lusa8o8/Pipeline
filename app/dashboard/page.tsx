@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+﻿export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppNav } from "@/app/_components/app-nav";
@@ -45,6 +45,7 @@ export default async function DashboardPage() {
       "id,user_id,title,status,created_at,goals(id,dream_id,user_id,outcome,created_at),pipelines(id,dream_id,user_id,created_at)"
     )
     .eq("user_id", user.id)
+    .eq("status", "active")
     .order("created_at", { ascending: false });
 
   if (error) {
@@ -60,3 +61,4 @@ export default async function DashboardPage() {
     </main>
   );
 }
+
