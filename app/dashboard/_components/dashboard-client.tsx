@@ -120,7 +120,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
             placeholder="What dream are you working on?"
             value={dreamTitle}
             onChange={(event) => setDreamTitle(event.target.value)}
-            className="w-full rounded border border-gray-300 px-4 py-3 text-lg"
+            className="w-full rounded border border-gray-300 px-4 py-3 text-lg placeholder:text-gray-400"
             required
           />
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -142,7 +142,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
             placeholder="What outcome would prove this dream is real?"
             value={goalOutcome}
             onChange={(event) => setGoalOutcome(event.target.value)}
-            className="w-full rounded border border-gray-300 px-4 py-3"
+            className="w-full rounded border border-gray-300 px-4 py-3 placeholder:text-gray-400"
             required
           />
           {error && <p className="text-sm text-red-600">{error}</p>}
@@ -192,3 +192,4 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     </section>
   );
 }
+
