@@ -1,10 +1,12 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logApiUsage } from "@/lib/log-api-usage";
 
 type Params = { params: { pipeline_id: string } };
 
 type ClaudeResponse = {
   content?: Array<{ type?: string; text?: string }>;
+  usage?: { input_tokens?: number; output_tokens?: number };
   error?: { message?: string };
 };
 
@@ -68,7 +70,7 @@ export async function POST(_request: Request, { params }: Params) {
 
   const { data: dream, error: dreamError } = await supabase
     .from("dreams")
-    .select("title,goals(outcome,created_at)")
+    .select("title,context,goals(outcome,created_at)")
     .eq("id", pipeline.dream_id)
     .eq("user_id", user.id)
     .single();
@@ -109,6 +111,10 @@ export async function POST(_request: Request, { params }: Params) {
 
   const projectNames = projects.map((project) => project.name).join(", ");
 
+  const userMessage = dream.context?.trim()
+    ? `Dream: ${dream.title}\nGoal: ${goalOutcome}\nContext: ${dream.context}\nProjects: ${projectNames}`
+    : `Dream: ${dream.title}\nGoal: ${goalOutcome}\nProjects: ${projectNames}`;
+
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -123,13 +129,24 @@ export async function POST(_request: Request, { params }: Params) {
       messages: [
         {
           role: "user",
-          content: `Dream: ${dream.title}\nGoal: ${goalOutcome}\nProjects: ${projectNames}`,
+          content: userMessage,
         },
       ],
     }),
   });
 
   const payload = (await response.json()) as ClaudeResponse;
+
+  if (payload.usage?.input_tokens !== undefined && payload.usage?.output_tokens !== undefined) {
+    await logApiUsage({
+      userId: user.id,
+      endpoint: "generate_cards",
+      usage: {
+        input_tokens: payload.usage.input_tokens,
+        output_tokens: payload.usage.output_tokens,
+      },
+    });
+  }
 
   if (!response.ok) {
     return NextResponse.json(
@@ -184,3 +201,4 @@ export async function POST(_request: Request, { params }: Params) {
 
   return NextResponse.json({ success: true });
 }
+

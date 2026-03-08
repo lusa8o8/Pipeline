@@ -1,5 +1,6 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { logApiUsage } from "@/lib/log-api-usage";
 
 const SYSTEM_PROMPT = `You are a pipeline architect. Given a dream and a goal, generate 4-6 pipeline stages that represent the execution flow from zero to goal achieved. 
 
@@ -57,9 +58,7 @@ export async function POST(request: Request) {
 
   const { data: dream, error: dreamError } = await supabase
     .from("dreams")
-    .select(
-      "id,title,user_id,goals(outcome,created_at),pipelines(id)"
-    )
+    .select("id,title,context,user_id,goals(outcome,created_at),pipelines(id)")
     .eq("id", dreamId)
     .eq("user_id", user.id)
     .single();
@@ -86,6 +85,10 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Missing ANTHROPIC_API_KEY." }, { status: 500 });
   }
 
+  const userMessage = dream.context?.trim()
+    ? `Dream: ${dream.title}\nGoal: ${goal.outcome}\nContext: ${dream.context}`
+    : `Dream: ${dream.title}\nGoal: ${goal.outcome}`;
+
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",
     headers: {
@@ -100,7 +103,7 @@ export async function POST(request: Request) {
       messages: [
         {
           role: "user",
-          content: `Dream: ${dream.title}\nGoal: ${goal.outcome}`,
+          content: userMessage,
         },
       ],
     }),
@@ -108,8 +111,20 @@ export async function POST(request: Request) {
 
   const payload = (await response.json()) as {
     content?: Array<{ type?: string; text?: string }>;
+    usage?: { input_tokens?: number; output_tokens?: number };
     error?: { message?: string };
   };
+
+  if (payload.usage?.input_tokens !== undefined && payload.usage?.output_tokens !== undefined) {
+    await logApiUsage({
+      userId: user.id,
+      endpoint: "generate_pipeline",
+      usage: {
+        input_tokens: payload.usage.input_tokens,
+        output_tokens: payload.usage.output_tokens,
+      },
+    });
+  }
 
   if (!response.ok) {
     return NextResponse.json(
@@ -141,3 +156,4 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ stages });
 }
+

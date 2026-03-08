@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {
@@ -14,7 +14,7 @@ export async function GET() {
   const { data, error } = await supabase
     .from("dreams")
     .select(
-      "id,user_id,title,status,created_at,goals(id,dream_id,user_id,outcome,created_at),pipelines(id,dream_id,user_id,created_at)"
+      "id,user_id,title,context,status,created_at,goals(id,dream_id,user_id,outcome,created_at),pipelines(id,dream_id,user_id,created_at)"
     )
     .eq("user_id", user.id)
     .order("created_at", { ascending: false });
@@ -36,8 +36,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  const body = (await request.json()) as { title?: string };
+  const body = (await request.json()) as { title?: string; context?: string };
   const title = body.title?.trim();
+  const context = body.context?.trim() ?? "";
 
   if (!title) {
     return NextResponse.json({ message: "Title is required." }, { status: 400 });
@@ -62,8 +63,8 @@ export async function POST(request: Request) {
 
   const { data, error } = await supabase
     .from("dreams")
-    .insert({ user_id: user.id, title })
-    .select("id,user_id,title,status,created_at")
+    .insert({ user_id: user.id, title, context: context || null })
+    .select("id,user_id,title,context,status,created_at")
     .single();
 
   if (error) {
@@ -72,3 +73,4 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ dream: data });
 }
+

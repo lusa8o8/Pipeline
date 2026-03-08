@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -22,6 +22,7 @@ type Dream = {
   id: string;
   user_id: string;
   title: string;
+  context?: string | null;
   status: "active" | "archived";
   created_at: string;
   goals: Goal[];
@@ -39,6 +40,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     initialDreams.length === 0 ? "dream" : "list"
   );
   const [dreamTitle, setDreamTitle] = useState("");
+  const [dreamContext, setDreamContext] = useState("");
   const [goalOutcome, setGoalOutcome] = useState("");
   const [pendingDream, setPendingDream] = useState<Dream | null>(null);
   const [pipelineDream, setPipelineDream] = useState<Dream | null>(null);
@@ -105,7 +107,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     const response = await fetch("/api/dreams", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title: dreamTitle }),
+      body: JSON.stringify({ title: dreamTitle, context: dreamContext || "" }),
     });
 
     const data = (await response.json()) as { dream?: Dream; message?: string };
@@ -118,6 +120,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
 
     setPendingDream({ ...data.dream, goals: [], pipelines: [] });
     setDreamTitle("");
+    setDreamContext("");
     setStep("goal");
   };
 
@@ -232,6 +235,22 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
             className="w-full rounded border border-gray-300 px-4 py-3 text-lg placeholder:text-gray-400"
             required
           />
+
+          <div className="space-y-2">
+            <label className="block text-sm" htmlFor="dream-context">
+              Any context that would help? (optional)
+            </label>
+            <textarea
+              id="dream-context"
+              value={dreamContext}
+              onChange={(event) => setDreamContext(event.target.value)}
+              placeholder="e.g. I have a design background, no coding skills, $5k budget, 6 months to execute"
+              className="w-full rounded border border-gray-300 px-3 py-2 placeholder:text-gray-400 text-black"
+              rows={3}
+            />
+            <p className="text-xs text-gray-600">This helps the AI generate a more relevant pipeline</p>
+          </div>
+
           {error && <p className="text-sm text-red-600">{error}</p>}
           <button
             type="submit"
@@ -361,3 +380,4 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     </section>
   );
 }
+
