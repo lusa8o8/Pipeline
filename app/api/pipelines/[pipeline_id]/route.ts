@@ -39,35 +39,35 @@ export async function GET(_request: Request, { params }: Params) {
     return NextResponse.json({ message: "Dream not found." }, { status: 404 });
   }
 
-  const { data: stages, error: stagesError } = await supabase
-    .from("stages")
+  const { data: projects, error: projectsError } = await supabase
+    .from("projects")
     .select(
-      "id,pipeline_id,name,position,created_at,cards(id,stage_id,pipeline_id,user_id,title,position,created_at)"
+      "id,pipeline_id,name,position,created_at,cards(id,stage_id,pipeline_id,user_id,title,position,status,created_at)"
     )
     .eq("pipeline_id", pipeline.id)
     .order("position", { ascending: true });
 
-  if (stagesError) {
-    return NextResponse.json({ message: stagesError.message }, { status: 500 });
+  if (projectsError) {
+    return NextResponse.json({ message: projectsError.message }, { status: 500 });
   }
 
-  const normalizedStages = (stages ?? []).map((stage) => ({
-    ...stage,
-    cards: [...(stage.cards ?? [])].sort((a, b) => a.position - b.position),
+  const normalizedProjects = (projects ?? []).map((project) => ({
+    ...project,
+    cards: [...(project.cards ?? [])].sort((a, b) => a.position - b.position),
   }));
 
-  const finalStage = [...normalizedStages].sort((a, b) => b.position - a.position)[0];
-  const finalStageId = finalStage?.id ?? null;
-  const finalStageCardCount = finalStage?.cards?.length ?? 0;
+  const finalProject = [...normalizedProjects].sort((a, b) => b.position - a.position)[0];
+  const doneCardCount =
+    finalProject?.cards?.filter((card) => card.status === "done").length ?? 0;
 
   return NextResponse.json({
     pipeline,
     dream_title: dream.title,
     goal_outcome: dream.goals?.[0]?.outcome ?? "No goal found.",
     goal_target: pipeline.goal_target,
-    final_stage_id: finalStageId,
-    final_stage_card_count: finalStageCardCount,
-    stages: normalizedStages,
+    final_project_id: finalProject?.id ?? null,
+    done_card_count: doneCardCount,
+    projects: normalizedProjects,
   });
 }
 

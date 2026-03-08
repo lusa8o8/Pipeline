@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 type MoveCardBody = {
-  stage_id?: string;
-  position?: number;
+  status?: "backlog" | "ready" | "doing" | "done";
 };
 
 export async function PATCH(
@@ -20,19 +19,15 @@ export async function PATCH(
   }
 
   const body = (await request.json()) as MoveCardBody;
-  const stageId = body.stage_id;
-  const position = body.position;
+  const status = body.status;
 
-  if (!stageId || typeof position !== "number") {
-    return NextResponse.json(
-      { message: "stage_id and position are required." },
-      { status: 400 }
-    );
+  if (!status) {
+    return NextResponse.json({ message: "status is required." }, { status: 400 });
   }
 
   const { data: card, error: cardError } = await supabase
     .from("cards")
-    .select("id,pipeline_id,user_id")
+    .select("id,stage_id,pipeline_id,user_id")
     .eq("id", params.card_id)
     .eq("user_id", user.id)
     .single();
@@ -41,23 +36,25 @@ export async function PATCH(
     return NextResponse.json({ message: "Card not found." }, { status: 404 });
   }
 
-  const { data: stage, error: stageError } = await supabase
-    .from("stages")
-    .select("id,pipeline_id")
-    .eq("id", stageId)
+  const { count, error: countError } = await supabase
+    .from("cards")
+    .select("id", { count: "exact", head: true })
+    .eq("stage_id", card.stage_id)
     .eq("pipeline_id", card.pipeline_id)
-    .single();
+    .eq("user_id", user.id)
+    .eq("status", status)
+    .neq("id", card.id);
 
-  if (stageError || !stage) {
-    return NextResponse.json({ message: "Stage not found." }, { status: 404 });
+  if (countError) {
+    return NextResponse.json({ message: countError.message }, { status: 500 });
   }
 
   const { data, error } = await supabase
     .from("cards")
-    .update({ stage_id: stageId, position })
+    .update({ status, position: count ?? 0 })
     .eq("id", card.id)
     .eq("user_id", user.id)
-    .select("id,stage_id,pipeline_id,user_id,title,position,created_at")
+    .select("id,stage_id,pipeline_id,user_id,title,position,status,created_at")
     .single();
 
   if (error) {

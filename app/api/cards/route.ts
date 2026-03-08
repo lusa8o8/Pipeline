@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 type CreateCardBody = {
-  stage_id?: string;
+  project_id?: string;
   pipeline_id?: string;
   title?: string;
+  status?: "backlog" | "ready" | "doing" | "done";
 };
 
 export async function POST(request: Request) {
@@ -18,26 +19,27 @@ export async function POST(request: Request) {
   }
 
   const body = (await request.json()) as CreateCardBody;
-  const stageId = body.stage_id;
+  const projectId = body.project_id;
   const pipelineId = body.pipeline_id;
   const title = body.title?.trim();
+  const status = body.status ?? "backlog";
 
-  if (!stageId || !pipelineId || !title) {
+  if (!projectId || !pipelineId || !title) {
     return NextResponse.json(
-      { message: "stage_id, pipeline_id, and title are required." },
+      { message: "project_id, pipeline_id, and title are required." },
       { status: 400 }
     );
   }
 
-  const { data: stage, error: stageError } = await supabase
-    .from("stages")
+  const { data: project, error: projectError } = await supabase
+    .from("projects")
     .select("id,pipeline_id")
-    .eq("id", stageId)
+    .eq("id", projectId)
     .eq("pipeline_id", pipelineId)
     .single();
 
-  if (stageError || !stage) {
-    return NextResponse.json({ message: "Stage not found." }, { status: 404 });
+  if (projectError || !project) {
+    return NextResponse.json({ message: "Project not found." }, { status: 404 });
   }
 
   const { data: pipeline, error: pipelineError } = await supabase
@@ -54,9 +56,10 @@ export async function POST(request: Request) {
   const { count, error: countError } = await supabase
     .from("cards")
     .select("id", { count: "exact", head: true })
-    .eq("stage_id", stageId)
+    .eq("stage_id", projectId)
     .eq("pipeline_id", pipelineId)
-    .eq("user_id", user.id);
+    .eq("user_id", user.id)
+    .eq("status", status);
 
   if (countError) {
     return NextResponse.json({ message: countError.message }, { status: 500 });
@@ -65,13 +68,14 @@ export async function POST(request: Request) {
   const { data, error } = await supabase
     .from("cards")
     .insert({
-      stage_id: stageId,
+      stage_id: projectId,
       pipeline_id: pipelineId,
       user_id: user.id,
       title,
+      status,
       position: count ?? 0,
     })
-    .select("id,stage_id,pipeline_id,user_id,title,position,created_at")
+    .select("id,stage_id,pipeline_id,user_id,title,position,status,created_at")
     .single();
 
   if (error) {

@@ -2,17 +2,27 @@
 
 import { KeyboardEvent, useMemo, useState } from "react";
 
+type CardStatus = "backlog" | "ready" | "doing" | "done";
+
+const STATUSES: Array<{ key: CardStatus; label: string }> = [
+  { key: "backlog", label: "Backlog" },
+  { key: "ready", label: "Ready" },
+  { key: "doing", label: "Doing" },
+  { key: "done", label: "Done" },
+];
+
 type Card = {
   id: string;
   stage_id: string;
   pipeline_id: string;
   user_id: string;
   title: string;
+  status: CardStatus;
   position: number;
   created_at: string;
 };
 
-type Stage = {
+type Project = {
   id: string;
   pipeline_id: string;
   name: string;
@@ -25,21 +35,24 @@ type PipelineBoardProps = {
   pipelineId: string;
   dreamTitle: string;
   goalOutcome: string;
-  initialStages: Stage[];
+  initialProjects: Project[];
   initialGoalTarget: number;
-  initialFinalStageId: string | null;
+  initialFinalProjectId: string | null;
 };
 
 export function PipelineBoard({
   pipelineId,
   dreamTitle,
   goalOutcome,
-  initialStages,
+  initialProjects,
   initialGoalTarget,
-  initialFinalStageId,
+  initialFinalProjectId,
 }: PipelineBoardProps) {
-  const [stages, setStages] = useState<Stage[]>(initialStages);
-  const [addCardStageId, setAddCardStageId] = useState<string | null>(null);
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    initialProjects[0]?.id ?? null
+  );
+  const [addCardStatus, setAddCardStatus] = useState<CardStatus | null>(null);
   const [newCardTitle, setNewCardTitle] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [savingCard, setSavingCard] = useState(false);
@@ -52,38 +65,40 @@ export function PipelineBoard({
   const [settingGoalTarget, setSettingGoalTarget] = useState(false);
   const [hasSetGoalTarget, setHasSetGoalTarget] = useState(initialGoalTarget !== 10);
 
-  const stageMap = useMemo(() => {
-    const map = new Map<string, Stage>();
-    for (const stage of stages) {
-      map.set(stage.id, stage);
-    }
-    return map;
-  }, [stages]);
+  const selectedProject = useMemo(
+    () => projects.find((project) => project.id === selectedProjectId) ?? null,
+    [projects, selectedProjectId]
+  );
 
-  const finalStageId = useMemo(() => {
-    if (initialFinalStageId && stageMap.has(initialFinalStageId)) {
-      return initialFinalStageId;
+  const finalProjectId = useMemo(() => {
+    if (initialFinalProjectId && projects.some((project) => project.id === initialFinalProjectId)) {
+      return initialFinalProjectId;
     }
 
-    const sorted = [...stages].sort((a, b) => b.position - a.position);
+    const sorted = [...projects].sort((a, b) => b.position - a.position);
     return sorted[0]?.id ?? null;
-  }, [initialFinalStageId, stageMap, stages]);
+  }, [initialFinalProjectId, projects]);
 
-  const finalStageCardCount = useMemo(() => {
-    if (!finalStageId) {
+  const doneCardCount = useMemo(() => {
+    if (!finalProjectId) {
       return 0;
     }
 
-    return stageMap.get(finalStageId)?.cards.length ?? 0;
-  }, [finalStageId, stageMap]);
+    const finalProject = projects.find((project) => project.id === finalProjectId);
+    if (!finalProject) {
+      return 0;
+    }
+
+    return finalProject.cards.filter((card) => card.status === "done").length;
+  }, [projects, finalProjectId]);
 
   const percentComplete = useMemo(() => {
     if (goalTarget <= 0) {
       return 0;
     }
 
-    return Math.min(100, Math.floor((finalStageCardCount / goalTarget) * 100));
-  }, [finalStageCardCount, goalTarget]);
+    return Math.min(100, Math.floor((doneCardCount / goalTarget) * 100));
+  }, [doneCardCount, goalTarget]);
 
   const onSetGoalTarget = async () => {
     const parsed = Number(goalTargetInput);
@@ -118,7 +133,11 @@ export function PipelineBoard({
     setHasSetGoalTarget(true);
   };
 
-  const onAddCard = async (stageId: string) => {
+  const onAddCard = async (status: CardStatus) => {
+    if (!selectedProject) {
+      return;
+    }
+
     const title = newCardTitle.trim();
     if (!title) {
       setError("Card title is required.");
@@ -131,7 +150,12 @@ export function PipelineBoard({
     const response = await fetch("/api/cards", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stage_id: stageId, pipeline_id: pipelineId, title }),
+      body: JSON.stringify({
+        project_id: selectedProject.id,
+        pipeline_id: pipelineId,
+        title,
+        status,
+      }),
     });
 
     const data = (await response.json()) as { card?: Card; message?: string };
@@ -144,27 +168,31 @@ export function PipelineBoard({
 
     const createdCard = data.card;
 
-    setStages((current) =>
-      current.map((stage) =>
-        stage.id === stageId
-          ? { ...stage, cards: [...stage.cards, createdCard].sort((a, b) => a.position - b.position) }
-          : stage
+    setProjects((current) =>
+      current.map((project) =>
+        project.id === selectedProject.id
+          ? {
+              ...project,
+              cards: [...project.cards, createdCard].sort((a, b) => a.position - b.position),
+            }
+          : project
       )
     );
+
+    setAddCardStatus(null);
     setNewCardTitle("");
-    setAddCardStageId(null);
   };
 
-  const onCardKeyDown = (event: KeyboardEvent<HTMLInputElement>, stageId: string) => {
+  const onCardKeyDown = (event: KeyboardEvent<HTMLInputElement>, status: CardStatus) => {
     if (event.key === "Enter") {
       event.preventDefault();
-      void onAddCard(stageId);
+      void onAddCard(status);
       return;
     }
 
     if (event.key === "Escape") {
       event.preventDefault();
-      setAddCardStageId(null);
+      setAddCardStatus(null);
       setNewCardTitle("");
       setError(null);
     }
@@ -174,42 +202,34 @@ export function PipelineBoard({
     setDraggedCardId(card.id);
   };
 
-  const onDropCard = async (targetStageId: string, cardId: string) => {
-    const targetStage = stageMap.get(targetStageId);
-    if (!targetStage) {
+  const onDropCard = async (targetStatus: CardStatus, cardId: string) => {
+    if (!selectedProject) {
       return;
     }
 
-    const snapshot = stages;
-
-    let movingCard: Card | null = null;
-    for (const stage of snapshot) {
-      const found = stage.cards.find((card) => card.id === cardId);
-      if (found) {
-        movingCard = found;
-        break;
-      }
-    }
-
+    const project = selectedProject;
+    const movingCard = project.cards.find((card) => card.id === cardId);
     if (!movingCard) {
       return;
     }
 
+    const snapshot = projects;
+    const newPosition = project.cards.filter((card) => card.status === targetStatus).length;
+
     const optimisticCard: Card = {
       ...movingCard,
-      stage_id: targetStageId,
-      position: targetStage.cards.length,
+      status: targetStatus,
+      position: newPosition,
     };
 
-    setStages((current) =>
-      current.map((stage) => {
-        const withoutCard = stage.cards.filter((card) => card.id !== cardId);
-
-        if (stage.id !== targetStageId) {
-          return { ...stage, cards: withoutCard };
+    setProjects((current) =>
+      current.map((item) => {
+        if (item.id !== project.id) {
+          return item;
         }
 
-        return { ...stage, cards: [...withoutCard, optimisticCard] };
+        const withoutCard = item.cards.filter((card) => card.id !== cardId);
+        return { ...item, cards: [...withoutCard, optimisticCard] };
       })
     );
 
@@ -219,7 +239,7 @@ export function PipelineBoard({
     const response = await fetch(`/api/cards/${cardId}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ stage_id: targetStageId, position: targetStage.cards.length }),
+      body: JSON.stringify({ status: targetStatus }),
     });
 
     const data = (await response.json()) as { card?: Card; message?: string };
@@ -227,22 +247,37 @@ export function PipelineBoard({
     setDraggedCardId(null);
 
     if (!response.ok || !data.card) {
-      setStages(snapshot);
+      setProjects(snapshot);
       setError(data.message ?? "Failed to move card.");
       return;
     }
 
     const updatedCard = data.card;
 
-    setStages((current) =>
-      current.map((stage) => {
-        const cards = stage.cards
-          .map((card) => (card.id === updatedCard.id ? updatedCard : card))
-          .sort((a, b) => a.position - b.position);
+    setProjects((current) =>
+      current.map((item) => {
+        if (item.id !== project.id) {
+          return item;
+        }
 
-        return { ...stage, cards };
+        return {
+          ...item,
+          cards: item.cards
+            .map((card) => (card.id === updatedCard.id ? updatedCard : card))
+            .sort((a, b) => a.position - b.position),
+        };
       })
     );
+  };
+
+  const cardsByStatus = (status: CardStatus) => {
+    if (!selectedProject) {
+      return [];
+    }
+
+    return selectedProject.cards
+      .filter((card) => card.status === status)
+      .sort((a, b) => a.position - b.position);
   };
 
   return (
@@ -254,7 +289,7 @@ export function PipelineBoard({
       <section className="mt-6 rounded border border-gray-300 p-4">
         {!hasSetGoalTarget && goalTarget === 10 ? (
           <div className="flex flex-wrap items-center gap-3">
-            <p className="text-sm">How many {goalOutcome} = goal complete?</p>
+            <p className="text-sm">How many outcomes = goal complete?</p>
             <input
               type="number"
               min={1}
@@ -274,7 +309,7 @@ export function PipelineBoard({
         ) : (
           <div>
             <p className="text-sm font-medium">
-              {finalStageCardCount} / {goalTarget} - {percentComplete}% complete
+              {doneCardCount} / {goalTarget} - {percentComplete}% complete
             </p>
             <div className="mt-2 h-2 w-full rounded bg-gray-200">
               <div className="h-2 rounded bg-black" style={{ width: `${percentComplete}%` }} />
@@ -283,90 +318,118 @@ export function PipelineBoard({
         )}
       </section>
 
-      <div className="mt-6 flex gap-4 overflow-x-auto pb-4">
-        {stages.map((stage) => (
-          <div
-            key={stage.id}
-            className="min-h-[300px] min-w-[250px] rounded border border-gray-300 p-3"
-            onDragOver={(event) => event.preventDefault()}
-            onDrop={(event) => {
-              event.preventDefault();
-              const cardId = event.dataTransfer.getData("text/plain") || draggedCardId;
-              if (!cardId) {
-                return;
-              }
+      <div className="mt-6 flex gap-4">
+        <aside className="w-56 rounded border border-gray-300 p-3">
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-600">Projects</h2>
+          <div className="mt-3 space-y-2">
+            {projects.map((project) => (
+              <button
+                key={project.id}
+                type="button"
+                onClick={() => {
+                  setSelectedProjectId(project.id);
+                  setAddCardStatus(null);
+                  setNewCardTitle("");
+                }}
+                className={`w-full rounded px-3 py-2 text-left text-sm ${
+                  selectedProjectId === project.id
+                    ? "bg-black text-white"
+                    : "border border-gray-300 bg-white text-black"
+                }`}
+              >
+                {project.name}
+              </button>
+            ))}
+          </div>
+        </aside>
 
-              void onDropCard(stage.id, cardId);
-            }}
-          >
-            <h2 className="text-lg font-medium">{stage.name}</h2>
+        <section className="min-w-0 flex-1 overflow-x-auto">
+          <div className="flex min-w-[1040px] gap-4 pb-4">
+            {STATUSES.map(({ key, label }) => (
+              <div
+                key={key}
+                className="min-h-[360px] min-w-[250px] rounded border border-gray-300 p-3"
+                onDragOver={(event) => event.preventDefault()}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  const cardId = event.dataTransfer.getData("text/plain") || draggedCardId;
+                  if (!cardId) {
+                    return;
+                  }
 
-            <div className="mt-3 space-y-2">
-              {stage.cards
-                .slice()
-                .sort((a, b) => a.position - b.position)
-                .map((card) => (
-                  <div
-                    key={card.id}
-                    draggable
-                    onDragStart={() => handleDragStart(card)}
-                    className="bg-white text-black rounded px-3 py-2 text-sm cursor-grab shadow-sm"
-                  >
-                    {card.title}
-                  </div>
-                ))}
-            </div>
+                  void onDropCard(key, cardId);
+                }}
+              >
+                <h3 className="text-sm font-semibold">{label}</h3>
 
-            <div className="mt-4">
-              {addCardStageId === stage.id ? (
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={newCardTitle}
-                    onChange={(event) => setNewCardTitle(event.target.value)}
-                    onKeyDown={(event) => onCardKeyDown(event, stage.id)}
-                    className="w-full rounded border-2 border-dashed border-gray-400 bg-gray-50 px-2 py-1 text-sm placeholder:text-gray-400 text-black"
-                    placeholder="Card title"
-                    autoFocus
-                  />
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => void onAddCard(stage.id)}
-                      disabled={savingCard}
-                      className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50"
+                <div className="mt-3 space-y-2">
+                  {cardsByStatus(key).map((card) => (
+                    <div
+                      key={card.id}
+                      draggable
+                      onDragStart={(event) => {
+                        event.dataTransfer.setData("text/plain", card.id);
+                        handleDragStart(card);
+                      }}
+                      className="bg-white text-black rounded px-3 py-2 text-sm cursor-grab shadow-sm"
                     >
-                      Save
-                    </button>
+                      {card.title}
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-4">
+                  {addCardStatus === key ? (
+                    <div className="space-y-2">
+                      <input
+                        type="text"
+                        value={newCardTitle}
+                        onChange={(event) => setNewCardTitle(event.target.value)}
+                        onKeyDown={(event) => onCardKeyDown(event, key)}
+                        className="w-full rounded border border-gray-300 bg-gray-50 px-2 py-1 text-sm placeholder:text-gray-400 text-black"
+                        placeholder="Card title"
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => void onAddCard(key)}
+                          disabled={savingCard}
+                          className="rounded bg-black px-3 py-1 text-sm text-white disabled:opacity-50"
+                        >
+                          Save
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setAddCardStatus(null);
+                            setNewCardTitle("");
+                            setError(null);
+                          }}
+                          className="rounded border border-gray-300 px-3 py-1 text-sm"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
                     <button
                       type="button"
                       onClick={() => {
-                        setAddCardStageId(null);
+                        setAddCardStatus(key);
                         setNewCardTitle("");
                         setError(null);
                       }}
                       className="rounded border border-gray-300 px-3 py-1 text-sm"
                     >
-                      Cancel
+                      + Add card
                     </button>
-                  </div>
+                  )}
                 </div>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setAddCardStageId(stage.id);
-                    setNewCardTitle("");
-                    setError(null);
-                  }}
-                  className="rounded border border-gray-300 px-3 py-1 text-sm"
-                >
-                  + Add card
-                </button>
-              )}
-            </div>
+              </div>
+            ))}
           </div>
-        ))}
+        </section>
       </div>
 
       {movingCardId && <p className="text-sm text-gray-600">Moving card...</p>}

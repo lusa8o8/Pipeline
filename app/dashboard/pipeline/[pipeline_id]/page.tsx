@@ -9,11 +9,12 @@ type Card = {
   pipeline_id: string;
   user_id: string;
   title: string;
+  status: "backlog" | "ready" | "doing" | "done";
   position: number;
   created_at: string;
 };
 
-type Stage = {
+type Project = {
   id: string;
   pipeline_id: string;
   name: string;
@@ -60,33 +61,33 @@ export default async function PipelinePage({ params }: PageProps) {
     notFound();
   }
 
-  const { data: stages, error: stageError } = await supabase
-    .from("stages")
+  const { data: projects, error: projectError } = await supabase
+    .from("projects")
     .select(
-      "id,pipeline_id,name,position,created_at,cards(id,stage_id,pipeline_id,user_id,title,position,created_at)"
+      "id,pipeline_id,name,position,created_at,cards(id,stage_id,pipeline_id,user_id,title,status,position,created_at)"
     )
     .eq("pipeline_id", pipeline.id)
     .order("position", { ascending: true });
 
-  if (stageError) {
-    throw new Error(stageError.message);
+  if (projectError) {
+    throw new Error(projectError.message);
   }
 
-  const normalizedStages = ((stages ?? []) as Stage[]).map((stage) => ({
-    ...stage,
-    cards: [...(stage.cards ?? [])].sort((a, b) => a.position - b.position),
+  const normalizedProjects = ((projects ?? []) as Project[]).map((project) => ({
+    ...project,
+    cards: [...(project.cards ?? [])].sort((a, b) => a.position - b.position),
   }));
 
-  const finalStage = [...normalizedStages].sort((a, b) => b.position - a.position)[0];
+  const finalProject = [...normalizedProjects].sort((a, b) => b.position - a.position)[0];
 
   return (
     <PipelineBoard
       pipelineId={pipeline.id}
       dreamTitle={dream.title}
       goalOutcome={dream.goals?.[0]?.outcome ?? "No goal found."}
-      initialStages={normalizedStages}
+      initialProjects={normalizedProjects}
       initialGoalTarget={pipeline.goal_target}
-      initialFinalStageId={finalStage?.id ?? null}
+      initialFinalProjectId={finalProject?.id ?? null}
     />
   );
 }

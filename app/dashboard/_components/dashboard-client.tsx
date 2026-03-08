@@ -45,6 +45,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
   const [generatedStages, setGeneratedStages] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [buildingTasks, setBuildingTasks] = useState(false);
 
   const activeDreamCount = useMemo(
     () => dreams.filter((dream) => dream.status === "active").length,
@@ -195,6 +196,27 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
       return;
     }
 
+    setBuildingTasks(true);
+
+    const generateTasksResponse = await fetch(
+      `/api/pipelines/${data.pipeline.id}/generate-cards`,
+      {
+        method: "POST",
+      }
+    );
+
+    const generateTasksBody = (await generateTasksResponse.json()) as {
+      message?: string;
+      success?: boolean;
+    };
+
+    setBuildingTasks(false);
+
+    if (!generateTasksResponse.ok) {
+      setError(generateTasksBody.message ?? "Failed to build tasks.");
+      return;
+    }
+
     router.push(`/dashboard/pipeline/${data.pipeline.id}`);
   };
 
@@ -247,7 +269,8 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
         <div className="space-y-4">
           <h2 className="text-xl font-semibold">{pipelineDream.title}</h2>
           {loading ? <p>Generating your pipeline...</p> : null}
-          {!loading && generatedStages.length > 0 && (
+          {buildingTasks ? <p>Building your tasks...</p> : null}
+          {!loading && generatedStages.length > 0 && !buildingTasks && (
             <div className="flex gap-3 overflow-x-auto pb-2">
               {generatedStages.map((stage, index) => (
                 <input
@@ -267,24 +290,26 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
             </div>
           )}
           {error && <p className="text-sm text-red-600">{error}</p>}
-          <div className="flex gap-3">
-            <button
-              type="button"
-              disabled={loading || generatedStages.length === 0}
-              onClick={onConfirmPipeline}
-              className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
-            >
-              Confirm Pipeline
-            </button>
-            <button
-              type="button"
-              disabled={loading}
-              onClick={() => void generatePipeline(pipelineDream)}
-              className="rounded border border-gray-300 px-4 py-2 disabled:opacity-50"
-            >
-              Regenerate
-            </button>
-          </div>
+          {!buildingTasks && (
+            <div className="flex gap-3">
+              <button
+                type="button"
+                disabled={loading || generatedStages.length === 0}
+                onClick={onConfirmPipeline}
+                className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
+              >
+                Confirm Pipeline
+              </button>
+              <button
+                type="button"
+                disabled={loading}
+                onClick={() => void generatePipeline(pipelineDream)}
+                className="rounded border border-gray-300 px-4 py-2 disabled:opacity-50"
+              >
+                Regenerate
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -336,4 +361,3 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     </section>
   );
 }
-
