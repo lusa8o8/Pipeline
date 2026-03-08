@@ -1,6 +1,26 @@
 export const dynamic = "force-dynamic";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { PipelineBoard } from "../pipeline-board";
+
+type Card = {
+  id: string;
+  stage_id: string;
+  pipeline_id: string;
+  user_id: string;
+  title: string;
+  position: number;
+  created_at: string;
+};
+
+type Stage = {
+  id: string;
+  pipeline_id: string;
+  name: string;
+  position: number;
+  created_at: string;
+  cards: Card[];
+};
 
 type PageProps = {
   params: {
@@ -42,7 +62,7 @@ export default async function PipelinePage({ params }: PageProps) {
 
   const { data: stages, error: stageError } = await supabase
     .from("stages")
-    .select("id,name,position,created_at")
+    .select("id,pipeline_id,name,position,created_at,cards(id,stage_id,pipeline_id,user_id,title,position,created_at)")
     .eq("pipeline_id", pipeline.id)
     .order("position", { ascending: true });
 
@@ -50,17 +70,17 @@ export default async function PipelinePage({ params }: PageProps) {
     throw new Error(stageError.message);
   }
 
-  const goalOutcome = dream.goals?.[0]?.outcome ?? "No goal found.";
+  const normalizedStages = ((stages ?? []) as Stage[]).map((stage) => ({
+    ...stage,
+    cards: [...(stage.cards ?? [])].sort((a, b) => a.position - b.position),
+  }));
 
   return (
-    <main className="mx-auto min-h-screen w-full max-w-4xl p-6">
-      <h1 className="text-2xl font-semibold">{dream.title}</h1>
-      <p className="mt-2 text-gray-700">{goalOutcome}</p>
-      <ul className="mt-6 list-disc space-y-2 pl-5">
-        {(stages ?? []).map((stage) => (
-          <li key={stage.id}>{stage.name}</li>
-        ))}
-      </ul>
-    </main>
+    <PipelineBoard
+      pipelineId={pipeline.id}
+      dreamTitle={dream.title}
+      goalOutcome={dream.goals?.[0]?.outcome ?? "No goal found."}
+      initialStages={normalizedStages}
+    />
   );
 }
