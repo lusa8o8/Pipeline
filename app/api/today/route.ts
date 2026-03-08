@@ -1,6 +1,12 @@
 ﻿import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
+type ActivePipeline = {
+  id: string;
+  dream_id: string;
+  dreams: Array<{ id: string; title: string; status: "active" | "archived" }>;
+};
+
 export async function GET() {
   const supabase = createClient();
   const {
@@ -36,43 +42,37 @@ export async function GET() {
 
   const { data: pipelines, error: pipelinesError } = await supabase
     .from("pipelines")
-    .select("id,dream_id")
-    .in("id", pipelineIds.length > 0 ? pipelineIds : ["00000000-0000-0000-0000-000000000000"]);
+    .select("id,dream_id,dreams!inner(id,title,status)")
+    .in("id", pipelineIds.length > 0 ? pipelineIds : ["00000000-0000-0000-0000-000000000000"])
+    .eq("dreams.status", "active");
 
   if (pipelinesError) {
     return NextResponse.json({ message: pipelinesError.message }, { status: 500 });
   }
 
-  const dreamIds = Array.from(new Set((pipelines ?? []).map((pipeline) => pipeline.dream_id)));
-
-  const { data: dreams, error: dreamsError } = await supabase
-    .from("dreams")
-    .select("id,title")
-    .in("id", dreamIds.length > 0 ? dreamIds : ["00000000-0000-0000-0000-000000000000"]);
-
-  if (dreamsError) {
-    return NextResponse.json({ message: dreamsError.message }, { status: 500 });
-  }
+  const activePipelines = (pipelines ?? []) as ActivePipeline[];
+  const activePipelineIds = new Set(activePipelines.map((pipeline) => pipeline.id));
 
   const projectMap = new Map((projects ?? []).map((project) => [project.id, project.name]));
-  const pipelineMap = new Map((pipelines ?? []).map((pipeline) => [pipeline.id, pipeline]));
-  const dreamMap = new Map((dreams ?? []).map((dream) => [dream.id, dream.title]));
+  const pipelineMap = new Map(activePipelines.map((pipeline) => [pipeline.id, pipeline]));
 
-  const today = (cards ?? []).map((card) => {
-    const pipeline = pipelineMap.get(card.pipeline_id);
-    const dreamId = pipeline?.dream_id ?? "";
+  const today = (cards ?? [])
+    .filter((card) => activePipelineIds.has(card.pipeline_id))
+    .map((card) => {
+      const pipeline = pipelineMap.get(card.pipeline_id);
+      const dream = pipeline?.dreams?.[0];
 
-    return {
-      card_id: card.id,
-      card_title: card.title,
-      status: card.status,
-      focused_at: card.focused_at,
-      project_name: projectMap.get(card.stage_id) ?? "Unknown project",
-      pipeline_id: card.pipeline_id,
-      dream_title: dreamMap.get(dreamId) ?? "Unknown dream",
-      dream_id: dreamId,
-    };
-  });
+      return {
+        card_id: card.id,
+        card_title: card.title,
+        status: card.status,
+        focused_at: card.focused_at,
+        project_name: projectMap.get(card.stage_id) ?? "Unknown project",
+        pipeline_id: card.pipeline_id,
+        dream_title: dream?.title ?? "Unknown dream",
+        dream_id: pipeline?.dream_id ?? "",
+      };
+    });
 
   return NextResponse.json({ today });
 }
