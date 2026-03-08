@@ -270,8 +270,14 @@ export function PipelineBoard({
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
       <section className="mt-6 rounded border border-gray-300 p-4">
-        <div className="h-2 w-full rounded bg-gray-200">
-          <div className="h-2 rounded bg-black" style={{ width: `${percentComplete}%` }} />
+        <div className="relative w-full bg-gray-700 rounded h-4">
+          <div
+            className="bg-white rounded h-4 transition-none"
+            style={{ width: `${percentComplete}%` }}
+          />
+          <span className="absolute inset-0 flex items-center justify-center text-xs font-medium text-black mix-blend-difference">
+            {percentComplete}%
+          </span>
         </div>
 
         {bottlenecks.length > 0 && (
@@ -405,4 +411,5 @@ export function PipelineBoard({
     </main>
   );
 }
+
 
