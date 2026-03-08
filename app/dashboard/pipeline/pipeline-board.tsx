@@ -59,6 +59,7 @@ export function PipelineBoard({
   const [error, setError] = useState<string | null>(null);
   const [savingCard, setSavingCard] = useState(false);
   const [movingCardId, setMovingCardId] = useState<string | null>(null);
+  const [deletingCardId, setDeletingCardId] = useState<string | null>(null);
   const [draggedCardId, setDraggedCardId] = useState<string | null>(null);
 
   const selectedProject = useMemo(
@@ -263,6 +264,35 @@ export function PipelineBoard({
       .sort((a, b) => a.position - b.position);
   };
 
+  const onDeleteCard = async (cardId: string) => {
+    if (!selectedProject) {
+      return;
+    }
+
+    const snapshot = projects;
+
+    setProjects((current) =>
+      current.map((project) => ({
+        ...project,
+        cards: project.cards.filter((card) => card.id !== cardId),
+      }))
+    );
+
+    setDeletingCardId(cardId);
+    setError(null);
+
+    const response = await fetch(`/api/cards/${cardId}`, {
+      method: "DELETE",
+    });
+
+    setDeletingCardId(null);
+
+    if (!response.ok) {
+      const data = (await response.json()) as { message?: string };
+      setProjects(snapshot);
+      setError(data.message ?? "Failed to delete card.");
+    }
+  };
   return (
     <main className="min-h-screen p-6">
       <h1 className="text-2xl font-semibold">{dreamTitle}</h1>
@@ -346,9 +376,21 @@ export function PipelineBoard({
                         event.dataTransfer.setData("text/plain", card.id);
                         handleDragStart(card);
                       }}
-                      className="bg-white text-black rounded px-3 py-2 text-sm cursor-grab shadow-sm border border-gray-200"
+                      className="group relative bg-white text-black rounded px-3 py-2 text-sm cursor-grab shadow-sm border border-gray-200"
                     >
-                      {card.title}
+                      <button
+                        type="button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          void onDeleteCard(card.id);
+                        }}
+                        disabled={deletingCardId === card.id}
+                        className="absolute right-1 top-1 hidden h-5 w-5 items-center justify-center rounded text-xs text-gray-600 hover:bg-gray-200 hover:text-black group-hover:flex disabled:opacity-50"
+                        aria-label="Delete card"
+                      >
+                        ×
+                      </button>
+                      <span className="pr-6">{card.title}</span>
                     </div>
                   ))}
                 </div>
@@ -411,5 +453,6 @@ export function PipelineBoard({
     </main>
   );
 }
+
 
 

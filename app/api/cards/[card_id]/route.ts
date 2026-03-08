@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 type MoveCardBody = {
@@ -64,4 +64,45 @@ export async function PATCH(
   }
 
   return NextResponse.json({ card: data });
+}
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: { card_id: string } }
+) {
+  const supabase = createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data: card, error: cardError } = await supabase
+    .from("cards")
+    .select("id")
+    .eq("id", params.card_id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (cardError) {
+    return NextResponse.json({ message: cardError.message }, { status: 500 });
+  }
+
+  if (!card) {
+    return NextResponse.json({ message: "Card not found." }, { status: 404 });
+  }
+
+  const { error } = await supabase
+    .from("cards")
+    .delete()
+    .eq("id", params.card_id)
+    .eq("user_id", user.id);
+
+  if (error) {
+    return NextResponse.json({ message: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
 }
