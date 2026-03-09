@@ -286,8 +286,8 @@ export function PipelineBoard({
   };
 
   return (
-    <main className="min-h-screen p-10">
-      <h1 className="serif-heading text-4xl text-white">{dreamTitle}</h1>
+    <main className="min-h-screen p-4 md:p-10">
+      <h1 className="serif-heading text-3xl leading-tight text-white break-words md:text-4xl">{dreamTitle}</h1>
       <p className="mt-2 text-sm text-[#555]">{goalOutcome}</p>
       {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
 
@@ -310,8 +310,33 @@ export function PipelineBoard({
         )}
       </section>
 
-      <div className="mt-6 flex gap-4">
-        <aside className="w-56 rounded border border-[#1E1E1E] bg-[#111] p-3">
+      <div className="mt-6 md:hidden">
+        <div className="overflow-x-auto pb-4 [scrollbar-width:none] [-ms-overflow-style:none]">
+          <div className="flex w-max gap-2 whitespace-nowrap pr-2">
+            {projects.map((project) => (
+              <button
+                key={`mobile-${project.id}`}
+                type="button"
+                onClick={() => {
+                  setSelectedProjectId(project.id);
+                  setAddCardStatus(null);
+                  setNewCardTitle("");
+                }}
+                className={`rounded-full border px-4 py-2 text-sm ${
+                  selectedProjectId === project.id
+                    ? "border-white bg-white text-black"
+                    : "border-[#2A2A2A] bg-transparent text-[#555]"
+                }`}
+              >
+                {project.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      <div className="mt-2 flex gap-4 md:mt-6">
+        <aside className="hidden w-56 rounded border border-[#1E1E1E] bg-[#111] p-3 md:block">
           <h2 className="text-[11px] uppercase tracking-[1.5px] text-[#444]">Projects</h2>
           <div className="mt-3 space-y-2">
             {projects.map((project) => (
@@ -335,15 +360,15 @@ export function PipelineBoard({
           </div>
         </aside>
 
-        <section className="min-w-0 flex-1 overflow-x-auto">
-          <div className="flex min-w-[780px] gap-4 pb-4">
+        <section className="min-w-0 flex-1">
+          <div className="flex flex-col gap-6 pb-4 md:min-w-[780px] md:flex-row md:gap-4">
             {STATUSES.map(({ key, label }) => {
               const cards = cardsByStatus(key);
 
               return (
                 <div
                   key={key}
-                  className="min-h-[360px] min-w-[250px] rounded border border-[#1E1E1E] bg-[#111] p-3"
+                  className="w-full rounded border border-[#1E1E1E] bg-[#111] p-3 md:min-h-[360px] md:min-w-[250px]"
                   onDragOver={(event) => event.preventDefault()}
                   onDrop={(event) => {
                     event.preventDefault();
@@ -457,4 +482,5 @@ export function PipelineBoard({
     </main>
   );
 }
+
 
