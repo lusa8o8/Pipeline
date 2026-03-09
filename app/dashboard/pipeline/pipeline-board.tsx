@@ -286,14 +286,14 @@ export function PipelineBoard({
   };
 
   return (
-    <main className="min-h-screen p-4 md:p-10">
-      <h1 className="serif-heading text-3xl leading-tight text-white break-words md:text-4xl">{dreamTitle}</h1>
+    <main className="min-h-screen max-w-[100vw] overflow-x-hidden px-4 py-4 md:p-10 [&_*]:box-border">
+      <h1 className="serif-heading text-[clamp(16px,4vw,28px)] leading-tight text-white break-words [overflow-wrap:anywhere] md:text-4xl">{dreamTitle}</h1>
       <p className="mt-2 text-sm text-[#555]">{goalOutcome}</p>
       {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
 
       <section className="mt-6 rounded-lg border border-[#1E1E1E] bg-[#111] p-4">
-        <div className="flex items-center gap-3">
-          <div className="relative h-1 flex-1 rounded bg-[#1A1A1A]">
+        <div className="flex w-full items-center gap-3 overflow-hidden">
+          <div className="relative h-1 w-full flex-1 rounded bg-[#1A1A1A]">
             <div className="h-1 rounded bg-white" style={{ width: `${percentComplete}%` }} />
           </div>
           <span className="w-10 text-right text-xs font-medium text-white">{percentComplete}%</span>
@@ -335,7 +335,7 @@ export function PipelineBoard({
         </div>
       </div>
 
-      <div className="mt-2 flex gap-4 md:mt-6">
+      <div className="mt-2 flex w-full gap-4 md:mt-6">
         <aside className="hidden w-56 rounded border border-[#1E1E1E] bg-[#111] p-3 md:block">
           <h2 className="text-[11px] uppercase tracking-[1.5px] text-[#444]">Projects</h2>
           <div className="mt-3 space-y-2">
@@ -360,7 +360,7 @@ export function PipelineBoard({
           </div>
         </aside>
 
-        <section className="min-w-0 flex-1">
+        <section className="min-w-0 w-full flex-1">
           <div className="flex flex-col gap-6 pb-4 md:min-w-[780px] md:flex-row md:gap-4">
             {STATUSES.map(({ key, label }) => {
               const cards = cardsByStatus(key);
@@ -368,7 +368,7 @@ export function PipelineBoard({
               return (
                 <div
                   key={key}
-                  className="w-full rounded border border-[#1E1E1E] bg-[#111] p-3 md:min-h-[360px] md:min-w-[250px]"
+                  className="w-full max-w-full rounded border border-[#1E1E1E] bg-[#111] p-3 md:min-h-[360px] md:min-w-[250px]"
                   onDragOver={(event) => event.preventDefault()}
                   onDrop={(event) => {
                     event.preventDefault();
@@ -418,7 +418,7 @@ export function PipelineBoard({
                         >
                           ×
                         </button>
-                        <span className="pr-6">{card.title}</span>
+                        <span className="pr-6 break-words [overflow-wrap:anywhere]">{card.title}</span>
                       </div>
                     ))}
                   </div>
@@ -482,5 +482,6 @@ export function PipelineBoard({
     </main>
   );
 }
+
 
 
