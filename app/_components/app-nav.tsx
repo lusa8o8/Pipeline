@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -72,12 +72,6 @@ export function AppNav({ email, activeDreamTitle }: AppNavProps) {
         </div>
       </aside>
 
-      <div className="fixed left-0 right-0 top-0 z-40 border-b border-[#1E1E1E] bg-[#0A0A0A] px-4 py-2 md:hidden">
-        <p className="truncate text-[12px] text-[#DDD]">{activeDreamTitle || "No active dream"}</p>
-        <div className="mt-1 h-1 overflow-hidden rounded bg-[#1A1A1A]">
-          <div className="h-1 w-[22%] rounded bg-white" />
-        </div>
-      </div>
 
       <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-14 border-t border-[#1E1E1E] bg-[#0A0A0A] md:hidden">
         {MOBILE_ITEMS.map((item) => {
@@ -104,3 +98,4 @@ export function AppNav({ email, activeDreamTitle }: AppNavProps) {
     </>
   );
 }
+

@@ -1,4 +1,4 @@
-﻿export const dynamic = "force-dynamic";
+export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { AppNav } from "@/app/_components/app-nav";
@@ -46,7 +46,7 @@ export default async function TodayPage() {
     return (
       <main className="flex min-h-screen bg-[#080808] text-white">
         <AppNav email={user.email} activeDreamTitle={activeDream?.title ?? "No active dream"} />
-        <div className="flex-1 pb-[72px] pt-14 md:pb-0 md:pt-0"><TodayClient initialItems={[]} activeDreamTitle={activeDream?.title ?? "No active dream"} /></div>
+        <div className="flex-1 pb-[72px] md:pb-0"><TodayClient initialItems={[]} activeDreamTitle={activeDream?.title ?? "No active dream"} /></div>
       </main>
     );
   }
@@ -63,7 +63,7 @@ export default async function TodayPage() {
     return (
       <main className="flex min-h-screen bg-[#080808] text-white">
         <AppNav email={user.email} activeDreamTitle={activeDream?.title ?? "No active dream"} />
-        <div className="flex-1 pb-[72px] pt-14 md:pb-0 md:pt-0"><TodayClient initialItems={[]} activeDreamTitle={activeDream?.title ?? "No active dream"} /></div>
+        <div className="flex-1 pb-[72px] md:pb-0"><TodayClient initialItems={[]} activeDreamTitle={activeDream?.title ?? "No active dream"} /></div>
       </main>
     );
   }
@@ -106,9 +106,10 @@ export default async function TodayPage() {
   return (
     <main className="flex min-h-screen bg-[#080808] text-white">
       <AppNav email={user.email} activeDreamTitle={activeDream?.title ?? "No active dream"} />
-      <div className="flex-1 pb-[72px] pt-14 md:pb-0 md:pt-0"><TodayClient initialItems={todayItems} activeDreamTitle={activeDream?.title ?? "No active dream"} /></div>
+      <div className="flex-1 pb-[72px] md:pb-0"><TodayClient initialItems={todayItems} activeDreamTitle={activeDream?.title ?? "No active dream"} /></div>
     </main>
   );
 }
+
 
 
