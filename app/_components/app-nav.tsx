@@ -15,14 +15,14 @@ type UserState = {
 const NAV_ITEMS = [
   { href: "/today", label: "Today" },
   { href: "/dashboard", label: "Dreams" },
-  { href: "/dashboard", label: "Archive" },
+  { href: "/archive", label: "Archive" },
   { href: "/dashboard", label: "Settings" },
 ];
 
 const MOBILE_ITEMS = [
   { href: "/today", label: "Today" },
   { href: "/dashboard", label: "Dreams" },
-  { href: "/dashboard", label: "Archive" },
+  { href: "/archive", label: "Archive" },
 ];
 
 export function AppNav() {
@@ -85,7 +85,8 @@ export function AppNav() {
           {NAV_ITEMS.map((item) => {
             const isActive =
               (item.label === "Today" && pathname === "/today") ||
-              (item.label === "Dreams" && pathname === "/dashboard");
+              (item.label === "Dreams" && pathname === "/dashboard") ||
+              (item.label === "Archive" && pathname === "/archive");
 
             return (
               <Link
@@ -119,7 +120,8 @@ export function AppNav() {
         {MOBILE_ITEMS.map((item) => {
           const isActive =
             (item.label === "Today" && pathname === "/today") ||
-            (item.label === "Dreams" && pathname === "/dashboard");
+            (item.label === "Dreams" && pathname === "/dashboard") ||
+              (item.label === "Archive" && pathname === "/archive");
 
           return (
             <Link
@@ -140,3 +142,4 @@ export function AppNav() {
     </>
   );
 }
+
