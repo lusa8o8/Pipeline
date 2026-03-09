@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppNav } from "@/app/_components/app-nav";
 import { DashboardClient } from "./_components/dashboard-client";
 
 type Goal = {
@@ -70,12 +69,13 @@ export default async function DashboardPage() {
 
   return (
     <main className="flex min-h-screen bg-[#080808] text-white">
-      <AppNav email={user.email} activeDreamTitle={dreamsWithPipelines[0]?.title ?? "No active dream"} />
       <div className="flex-1 pb-[80px] md:pb-0">
         <DashboardClient initialDreams={dreamsWithPipelines} />
       </div>
     </main>
   );
 }
+
+
 
 

@@ -1,7 +1,6 @@
 export const dynamic = "force-dynamic";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { AppNav } from "@/app/_components/app-nav";
 import { PipelineBoard } from "../pipeline-board";
 
 type Card = {
@@ -82,7 +81,6 @@ export default async function PipelinePage({ params }: PageProps) {
 
   return (
     <main className="flex min-h-screen bg-[#080808] text-white">
-      <AppNav email={user.email} activeDreamTitle={dream.title} />
       <div className="flex-1 pb-[80px] md:pb-0"><PipelineBoard
         pipelineId={pipeline.id}
         dreamTitle={dream.title}
@@ -93,6 +91,8 @@ export default async function PipelinePage({ params }: PageProps) {
     </main>
   );
 }
+
+
 
 
 
