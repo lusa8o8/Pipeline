@@ -73,7 +73,7 @@ export function AppNav({ email, activeDreamTitle }: AppNavProps) {
       </aside>
 
 
-      <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-14 border-t border-[#1E1E1E] bg-[#0A0A0A] md:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-14 border-t border-[#1E1E1E] bg-[#0A0A0A] md:hidden">
         {MOBILE_ITEMS.map((item) => {
           const isActive =
             (item.label === "Today" && pathname === "/today") ||
@@ -98,4 +98,5 @@ export function AppNav({ email, activeDreamTitle }: AppNavProps) {
     </>
   );
 }
+
 

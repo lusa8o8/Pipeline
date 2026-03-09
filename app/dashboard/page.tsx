@@ -71,10 +71,11 @@ export default async function DashboardPage() {
   return (
     <main className="flex min-h-screen bg-[#080808] text-white">
       <AppNav email={user.email} activeDreamTitle={dreamsWithPipelines[0]?.title ?? "No active dream"} />
-      <div className="flex-1 pb-[72px] md:pb-0">
+      <div className="flex-1 pb-[80px] md:pb-0">
         <DashboardClient initialDreams={dreamsWithPipelines} />
       </div>
     </main>
   );
 }
+
 
