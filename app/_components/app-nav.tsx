@@ -111,6 +111,10 @@ export function AppNav() {
         </div>
       </aside>
 
+      <div className="fixed right-4 top-3 z-[60] md:hidden">
+        <SignOutButton className="border-0 bg-transparent px-0 py-0 text-[11px] uppercase tracking-[0.6px] text-[#444] hover:border-0 hover:bg-transparent hover:text-[#555]" />
+      </div>
+
       <nav className="fixed bottom-0 left-0 right-0 z-50 flex h-14 border-t border-[#1E1E1E] bg-[#0A0A0A] md:hidden">
         {MOBILE_ITEMS.map((item) => {
           const isActive =

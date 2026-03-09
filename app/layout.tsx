@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { AppNav } from "@/app/_components/app-nav";
 import "./globals.css";
@@ -19,6 +19,13 @@ export const metadata: Metadata = {
   description: "Pipeline dashboard",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -33,4 +40,3 @@ export default function RootLayout({
     </html>
   );
 }
-
