@@ -13,7 +13,6 @@ type AppNavProps = {
 const NAV_ITEMS = [
   { href: "/today", label: "Today" },
   { href: "/dashboard", label: "Dreams" },
-  { href: "/dashboard", label: "Projects" },
   { href: "/dashboard", label: "Archive" },
   { href: "/dashboard", label: "Settings" },
 ];
@@ -21,7 +20,6 @@ const NAV_ITEMS = [
 const MOBILE_ITEMS = [
   { href: "/today", label: "Today" },
   { href: "/dashboard", label: "Dreams" },
-  { href: "/dashboard", label: "Projects" },
   { href: "/dashboard", label: "Archive" },
 ];
 
@@ -48,8 +46,7 @@ export function AppNav({ email, activeDreamTitle }: AppNavProps) {
           {NAV_ITEMS.map((item) => {
             const isActive =
               (item.label === "Today" && pathname === "/today") ||
-              (item.label === "Dreams" && pathname === "/dashboard") ||
-              (item.label === "Projects" && pathname.startsWith("/dashboard/pipeline"));
+              (item.label === "Dreams" && pathname === "/dashboard");
 
             return (
               <Link
@@ -86,8 +83,7 @@ export function AppNav({ email, activeDreamTitle }: AppNavProps) {
         {MOBILE_ITEMS.map((item) => {
           const isActive =
             (item.label === "Today" && pathname === "/today") ||
-            (item.label === "Dreams" && pathname === "/dashboard") ||
-            (item.label === "Projects" && pathname.startsWith("/dashboard/pipeline"));
+            (item.label === "Dreams" && pathname === "/dashboard");
 
           return (
             <Link

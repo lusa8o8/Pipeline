@@ -392,6 +392,12 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
                     <button
                       type="button"
                       onClick={() => {
+                        console.log("[Open]", {
+                          dreamId: dream.id,
+                          pipelineId,
+                          hasPipeline: !!pipelineId,
+                        });
+
                         if (pipelineId) {
                           router.push(`/dashboard/pipeline/${pipelineId}`);
                           return;
@@ -433,4 +439,5 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     </section>
   );
 }
+
 

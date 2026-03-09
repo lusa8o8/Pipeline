@@ -23,6 +23,7 @@ type Dream = {
   id: string;
   user_id: string;
   title: string;
+  context?: string | null;
   status: "active" | "archived";
   created_at: string;
   goals: Goal[];
@@ -39,28 +40,40 @@ export default async function DashboardPage() {
     redirect("/sign-in");
   }
 
-  const { data, error } = await supabase
+  const { data: dreamsData, error: dreamsError } = await supabase
     .from("dreams")
-    .select(
-      "id,user_id,title,status,created_at,goals(id,dream_id,user_id,outcome,created_at),pipelines(id,dream_id,user_id,created_at)"
-    )
+    .select("id,user_id,title,context,status,created_at,goals(id,dream_id,user_id,outcome,created_at)")
     .eq("user_id", user.id)
     .eq("status", "active")
     .order("created_at", { ascending: false });
 
-  if (error) {
-    throw new Error(error.message);
+  if (dreamsError) {
+    throw new Error(dreamsError.message);
   }
 
-  const dreams = (data ?? []) as Dream[];
+  const { data: pipelinesData, error: pipelinesError } = await supabase
+    .from("pipelines")
+    .select("id,dream_id,user_id,created_at")
+    .eq("user_id", user.id);
+
+  if (pipelinesError) {
+    throw new Error(pipelinesError.message);
+  }
+
+  const dreams = (dreamsData ?? []) as Omit<Dream, "pipelines">[];
+  const pipelines = (pipelinesData ?? []) as Pipeline[];
+
+  const dreamsWithPipelines: Dream[] = dreams.map((dream) => ({
+    ...dream,
+    pipelines: pipelines.filter((pipeline) => pipeline.dream_id === dream.id),
+  }));
 
   return (
     <main className="flex min-h-screen bg-[#080808] text-white">
-      <AppNav email={user.email} activeDreamTitle={dreams[0]?.title ?? "No active dream"} />
-      <div className="flex-1 pb-[72px] pt-14 md:pb-0 md:pt-0"><DashboardClient initialDreams={dreams} /></div>
+      <AppNav email={user.email} activeDreamTitle={dreamsWithPipelines[0]?.title ?? "No active dream"} />
+      <div className="flex-1 pb-[72px] pt-14 md:pb-0 md:pt-0">
+        <DashboardClient initialDreams={dreamsWithPipelines} />
+      </div>
     </main>
   );
 }
-
-
-
