@@ -1,11 +1,11 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 type CreateCardBody = {
   project_id?: string;
   pipeline_id?: string;
   title?: string;
-  status?: "backlog" | "ready" | "doing" | "done";
+  status?: "backlog" | "doing" | "done";
 };
 
 export async function POST(request: Request) {
@@ -23,6 +23,10 @@ export async function POST(request: Request) {
   const pipelineId = body.pipeline_id;
   const title = body.title?.trim();
   const status = body.status ?? "backlog";
+
+  if (!["backlog", "doing", "done"].includes(status)) {
+    return NextResponse.json({ message: "Invalid status." }, { status: 400 });
+  }
 
   if (!projectId || !pipelineId || !title) {
     return NextResponse.json(
@@ -84,3 +88,4 @@ export async function POST(request: Request) {
 
   return NextResponse.json({ card: data });
 }
+

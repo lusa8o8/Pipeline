@@ -10,7 +10,7 @@ type Card = {
   pipeline_id: string;
   user_id: string;
   title: string;
-  status: "backlog" | "ready" | "doing" | "done";
+  status: "backlog" | "doing" | "done";
   position: number;
   focused_at: string | null;
   created_at: string;
@@ -93,5 +93,6 @@ export default async function PipelinePage({ params }: PageProps) {
     </main>
   );
 }
+
 
 

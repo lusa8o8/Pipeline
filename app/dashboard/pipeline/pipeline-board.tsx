@@ -2,17 +2,16 @@
 
 import { KeyboardEvent, useMemo, useState } from "react";
 
-type CardStatus = "backlog" | "ready" | "doing" | "done";
+type CardStatus = "backlog" | "doing" | "done";
 
 type Bottleneck = {
   project_name: string;
-  type: "stuck_in_doing" | "stuck_in_ready";
+  type: "stuck_in_doing";
   card_count: number;
 };
 
 const STATUSES: Array<{ key: CardStatus; label: string }> = [
   { key: "backlog", label: "Backlog" },
-  { key: "ready", label: "Ready" },
   { key: "doing", label: "Doing" },
   { key: "done", label: "Done" },
 ];
@@ -95,7 +94,6 @@ export function PipelineBoard({
     for (const project of projects) {
       const doingCount = project.cards.filter((card) => card.status === "doing").length;
       const doneCount = project.cards.filter((card) => card.status === "done").length;
-      const readyCount = project.cards.filter((card) => card.status === "ready").length;
 
       if (doingCount >= 3 && doneCount === 0) {
         items.push({
@@ -105,13 +103,6 @@ export function PipelineBoard({
         });
       }
 
-      if (readyCount >= 3 && doingCount === 0) {
-        items.push({
-          project_name: project.name,
-          type: "stuck_in_ready",
-          card_count: readyCount,
-        });
-      }
     }
 
     return items;
@@ -312,9 +303,7 @@ export function PipelineBoard({
           <div className="mt-4 space-y-2 text-sm text-orange-300">
             {bottlenecks.map((bottleneck) => (
               <p key={`${bottleneck.project_name}-${bottleneck.type}`}>
-                {bottleneck.type === "stuck_in_doing"
-                  ? `⚠️ "${bottleneck.project_name}" has ${bottleneck.card_count} tasks stuck in Doing with nothing completed.`
-                  : `⚠️ "${bottleneck.project_name}" has ${bottleneck.card_count} tasks waiting in Ready with nothing in progress.`}
+                {`⚠️ "${bottleneck.project_name}" has ${bottleneck.card_count} tasks stuck in Doing with nothing completed.`}
               </p>
             ))}
           </div>
@@ -347,7 +336,7 @@ export function PipelineBoard({
         </aside>
 
         <section className="min-w-0 flex-1 overflow-x-auto">
-          <div className="flex min-w-[1040px] gap-4 pb-4">
+          <div className="flex min-w-[780px] gap-4 pb-4">
             {STATUSES.map(({ key, label }) => {
               const cards = cardsByStatus(key);
 
@@ -468,3 +457,4 @@ export function PipelineBoard({
     </main>
   );
 }
+

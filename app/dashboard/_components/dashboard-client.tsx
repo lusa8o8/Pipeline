@@ -367,9 +367,6 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
             {dreams.map((dream) => {
               const pipelineId = dream.pipelines[0]?.id;
               const progress = pipelineId ? 22 : 0;
-              const chips = pipelineId
-                ? ["Users", "Uploads", "Sessions", "Advocates"]
-                : ["No projects yet"];
 
               return (
                 <div
@@ -390,16 +387,6 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
                     <div className="h-1 rounded bg-white" style={{ width: `${progress}%` }} />
                   </div>
 
-                  <div className="mb-4 flex flex-wrap gap-2">
-                    {chips.map((chip) => (
-                      <span
-                        key={`${dream.id}-${chip}`}
-                        className="rounded-full border border-[#252525] bg-[#1A1A1A] px-2.5 py-1 text-[11px] text-[#666]"
-                      >
-                        {chip}
-                      </span>
-                    ))}
-                  </div>
 
                   <div className="mt-3 flex gap-2">
                     <button
@@ -446,3 +433,4 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     </section>
   );
 }
+

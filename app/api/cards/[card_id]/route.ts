@@ -2,7 +2,7 @@
 import { createClient } from "@/lib/supabase/server";
 
 type MoveCardBody = {
-  status?: "backlog" | "ready" | "doing" | "done";
+  status?: "backlog" | "doing" | "done";
 };
 
 export async function PATCH(
@@ -23,6 +23,10 @@ export async function PATCH(
 
   if (!status) {
     return NextResponse.json({ message: "status is required." }, { status: 400 });
+  }
+
+  if (!["backlog", "doing", "done"].includes(status)) {
+    return NextResponse.json({ message: "Invalid status." }, { status: 400 });
   }
 
   const { data: card, error: cardError } = await supabase
@@ -106,3 +110,4 @@ export async function DELETE(
 
   return NextResponse.json({ success: true });
 }
+
