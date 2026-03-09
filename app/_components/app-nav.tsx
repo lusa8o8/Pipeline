@@ -18,12 +18,19 @@ const NAV_ITEMS = [
   { href: "/dashboard", label: "Settings" },
 ];
 
+const MOBILE_ITEMS = [
+  { href: "/today", label: "Today" },
+  { href: "/dashboard", label: "Dreams" },
+  { href: "/dashboard", label: "Projects" },
+  { href: "/dashboard", label: "Archive" },
+];
+
 export function AppNav({ email, activeDreamTitle }: AppNavProps) {
   const pathname = usePathname();
 
   return (
     <>
-      <aside className="flex min-h-screen w-[220px] shrink-0 flex-col border-r border-[#1E1E1E] bg-[#0A0A0A] px-0 py-8">
+      <aside className="hidden min-h-screen w-[220px] shrink-0 flex-col border-r border-[#1E1E1E] bg-[#0A0A0A] px-0 py-8 md:flex">
         <div className="px-6 pb-10">
           <p className="serif-heading text-[20px] tracking-[-0.5px] text-white">Pipeline</p>
           <p className="mt-1 text-[11px] uppercase tracking-[0.5px] text-[#555]">Execution OS</p>
@@ -67,8 +74,37 @@ export function AppNav({ email, activeDreamTitle }: AppNavProps) {
           </div>
         </div>
       </aside>
+
+      <div className="fixed left-0 right-0 top-0 z-40 border-b border-[#1E1E1E] bg-[#0A0A0A] px-4 py-2 md:hidden">
+        <p className="truncate text-[12px] text-[#DDD]">{activeDreamTitle || "No active dream"}</p>
+        <div className="mt-1 h-1 overflow-hidden rounded bg-[#1A1A1A]">
+          <div className="h-1 w-[22%] rounded bg-white" />
+        </div>
+      </div>
+
+      <nav className="fixed bottom-0 left-0 right-0 z-40 flex h-14 border-t border-[#1E1E1E] bg-[#0A0A0A] md:hidden">
+        {MOBILE_ITEMS.map((item) => {
+          const isActive =
+            (item.label === "Today" && pathname === "/today") ||
+            (item.label === "Dreams" && pathname === "/dashboard") ||
+            (item.label === "Projects" && pathname.startsWith("/dashboard/pipeline"));
+
+          return (
+            <Link
+              key={`mobile-${item.label}`}
+              href={item.href}
+              className={`flex flex-1 flex-col items-center justify-center gap-1 text-[11px] uppercase tracking-[0.6px] ${
+                isActive ? "text-white" : "text-[#444]"
+              }`}
+            >
+              <span className={`h-1.5 w-1.5 rounded-full ${isActive ? "bg-white" : "bg-[#444]"}`} />
+              {item.label}
+            </Link>
+          );
+        })}
+      </nav>
+
       <QuickAddFab />
     </>
   );
 }
-

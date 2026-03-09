@@ -13,7 +13,7 @@ export function QuickAddFab() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-8 right-8 z-50">
+    <div className="fixed bottom-[72px] right-4 z-50 md:bottom-8 md:right-8">
       {open ? (
         <div className="absolute bottom-14 right-0 min-w-40 overflow-hidden rounded-md border border-[#2A2A2A] bg-[#111]">
           {ITEMS.map((item, index) => (
@@ -42,3 +42,4 @@ export function QuickAddFab() {
     </div>
   );
 }
+

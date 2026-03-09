@@ -83,7 +83,7 @@ export default async function PipelinePage({ params }: PageProps) {
   return (
     <main className="flex min-h-screen bg-[#080808] text-white">
       <AppNav email={user.email} activeDreamTitle={dream.title} />
-      <div className="flex-1"><PipelineBoard
+      <div className="flex-1 pb-[72px] pt-14 md:pb-0 md:pt-0"><PipelineBoard
         pipelineId={pipeline.id}
         dreamTitle={dream.title}
         goalOutcome={dream.goals?.[0]?.outcome ?? "No goal found."}
@@ -93,4 +93,5 @@ export default async function PipelinePage({ params }: PageProps) {
     </main>
   );
 }
+
 
