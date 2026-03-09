@@ -43,7 +43,7 @@ export default async function ArchivePage() {
   }
 
   return (
-    <main className="flex min-h-screen bg-[#080808] text-white">
+    <main className="flex min-h-screen bg-[var(--bg)] text-[var(--text-primary)]">
       <div className="flex-1 pb-[80px] md:pb-0">
         <ArchiveClient
           initialDreams={(archivedDreams ?? []) as ArchivedDream[]}
@@ -53,3 +53,4 @@ export default async function ArchivePage() {
     </main>
   );
 }
+

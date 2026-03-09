@@ -15,14 +15,14 @@ export function QuickAddFab() {
   return (
     <div className="fixed bottom-[72px] right-4 z-50 md:bottom-8 md:right-8">
       {open ? (
-        <div className="absolute bottom-14 right-0 min-w-40 overflow-hidden rounded-md border border-[#2A2A2A] bg-[#111]">
+        <div className="absolute bottom-14 right-0 min-w-40 overflow-hidden rounded-md border border-[var(--border-strong)] bg-[var(--card)]">
           {ITEMS.map((item, index) => (
             <Link
               key={item.label}
               href={item.href}
               onClick={() => setOpen(false)}
-              className={`block px-4 py-3 text-sm text-[#DDD] hover:bg-[#1A1A1A] ${
-                index < ITEMS.length - 1 ? "border-b border-[#1A1A1A]" : ""
+              className={`block px-4 py-3 text-sm text-[var(--text-secondary)] hover:bg-[var(--border)] ${
+                index < ITEMS.length - 1 ? "border-b border-[var(--border)]" : ""
               }`}
             >
               {item.label}
@@ -34,7 +34,7 @@ export function QuickAddFab() {
       <button
         type="button"
         onClick={() => setOpen((current) => !current)}
-        className="flex h-11 w-11 items-center justify-center rounded-full bg-white text-2xl leading-none text-black shadow-lg"
+        className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--accent)] text-2xl leading-none text-[var(--accent-contrast)] shadow-lg"
         aria-label={open ? "Close quick add" : "Open quick add"}
       >
         {open ? "×" : "+"}
@@ -42,4 +42,5 @@ export function QuickAddFab() {
     </div>
   );
 }
+
 

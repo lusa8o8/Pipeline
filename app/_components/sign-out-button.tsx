@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -20,7 +20,7 @@ export function SignOutButton({ className }: SignOutButtonProps) {
   return (
     <button
       onClick={onSignOut}
-      className={`rounded border border-[#2A2A2A] px-3 py-1 text-[11px] text-[#333] hover:border-[#333] hover:text-[#555]${className ? ` ${className}` : ""}`}
+      className={`rounded border border-[var(--border-strong)] bg-transparent px-3 py-1 text-[11px] text-[var(--text-muted)] hover:border-[var(--border-hover)] hover:text-[var(--text-secondary)]${className ? ` ${className}` : ""}`}
     >
       Sign out
     </button>

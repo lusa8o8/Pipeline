@@ -1,4 +1,4 @@
-export const dynamic = "force-dynamic";
+﻿export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { DashboardClient } from "./_components/dashboard-client";
@@ -68,13 +68,14 @@ export default async function DashboardPage() {
   }));
 
   return (
-    <main className="flex min-h-screen bg-[#080808] text-white">
+    <main className="flex min-h-screen bg-[var(--bg)] text-[var(--text-primary)]">
       <div className="flex-1 pb-[80px] md:pb-0">
         <DashboardClient initialDreams={dreamsWithPipelines} />
       </div>
     </main>
   );
 }
+
 
 
 

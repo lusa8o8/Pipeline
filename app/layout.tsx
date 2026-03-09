@@ -1,4 +1,4 @@
-import type { Metadata, Viewport } from "next";
+﻿import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import { AppNav } from "@/app/_components/app-nav";
 import "./globals.css";
@@ -32,9 +32,9 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" data-theme="dark">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}>
-        <div className="md:pl-[220px] min-h-screen">{children}</div>
+        <div className="min-h-screen md:pl-[220px]">{children}</div>
         <AppNav />
       </body>
     </html>

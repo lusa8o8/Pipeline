@@ -248,18 +248,18 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     <section className="mx-auto w-full max-w-5xl p-12">
       {step === "dream" && (
         <form className="max-w-3xl space-y-4" onSubmit={onCreateDream}>
-          <p className="text-[11px] uppercase tracking-[1.5px] text-[#444]">New Dream</p>
+          <p className="text-[11px] uppercase tracking-[1.5px] text-[var(--text-muted)]">New Dream</p>
           <input
             type="text"
             placeholder="What dream are you working on?"
             value={dreamTitle}
             onChange={(event) => setDreamTitle(event.target.value)}
-            className="w-full rounded-md border border-[#2A2A2A] bg-[#111] px-4 py-3 text-lg text-[#DDD] placeholder:text-[#555]"
+            className="w-full rounded-md border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-lg text-[var(--text-secondary)] placeholder:text-[var(--text-muted)]"
             required
           />
 
           <div className="space-y-2">
-            <label className="block text-sm text-[#DDD]" htmlFor="dream-context">
+            <label className="block text-sm text-[var(--text-secondary)]" htmlFor="dream-context">
               Any context that would help? (optional)
             </label>
             <textarea
@@ -267,17 +267,17 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
               value={dreamContext}
               onChange={(event) => setDreamContext(event.target.value)}
               placeholder="e.g. I have a design background, no coding skills, $5k budget, 6 months to execute"
-              className="w-full rounded-md border border-[#2A2A2A] bg-[#111] px-3 py-2 text-[#DDD] placeholder:text-[#555]"
+              className="w-full rounded-md border border-[var(--border-strong)] bg-[var(--card)] px-3 py-2 text-[var(--text-secondary)] placeholder:text-[var(--text-muted)]"
               rows={3}
             />
-            <p className="text-xs text-[#555]">This helps the AI generate a more relevant pipeline</p>
+            <p className="text-xs text-[var(--text-muted)]">This helps the AI generate a more relevant pipeline</p>
           </div>
 
           {error && <p className="text-sm text-red-400">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="rounded-md bg-white px-4 py-2 text-black disabled:opacity-50"
+            className="rounded-md bg-[var(--accent)] px-4 py-2 text-[var(--accent-contrast)] disabled:opacity-50"
           >
             {loading ? "Saving..." : "Continue"}
           </button>
@@ -286,20 +286,20 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
 
       {step === "goal" && pendingDream && (
         <form className="max-w-3xl space-y-4" onSubmit={onCreateGoal}>
-          <h2 className="serif-heading text-3xl text-white">{pendingDream.title}</h2>
+          <h2 className="serif-heading text-3xl text-[var(--text-primary)]">{pendingDream.title}</h2>
           <input
             type="text"
             placeholder="What outcome would prove this dream is real?"
             value={goalOutcome}
             onChange={(event) => setGoalOutcome(event.target.value)}
-            className="w-full rounded-md border border-[#2A2A2A] bg-[#111] px-4 py-3 text-[#DDD] placeholder:text-[#555]"
+            className="w-full rounded-md border border-[var(--border-strong)] bg-[var(--card)] px-4 py-3 text-[var(--text-secondary)] placeholder:text-[var(--text-muted)]"
             required
           />
           {error && <p className="text-sm text-red-400">{error}</p>}
           <button
             type="submit"
             disabled={loading}
-            className="rounded-md bg-white px-4 py-2 text-black disabled:opacity-50"
+            className="rounded-md bg-[var(--accent)] px-4 py-2 text-[var(--accent-contrast)] disabled:opacity-50"
           >
             {loading ? "Saving..." : "Create Pipeline"}
           </button>
@@ -308,9 +308,9 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
 
       {step === "pipeline" && pipelineDream && (
         <div className="space-y-5">
-          <h2 className="serif-heading text-3xl text-white">{pipelineDream.title}</h2>
-          {loading ? <p className="text-[#555]">Generating your pipeline...</p> : null}
-          {buildingTasks ? <p className="text-[#555]">Building your tasks...</p> : null}
+          <h2 className="serif-heading text-3xl text-[var(--text-primary)]">{pipelineDream.title}</h2>
+          {loading ? <p className="text-[var(--text-muted)]">Generating your pipeline...</p> : null}
+          {buildingTasks ? <p className="text-[var(--text-muted)]">Building your tasks...</p> : null}
           {!loading && generatedStages.length > 0 && !buildingTasks && (
             <div className="flex flex-wrap gap-3">
               {generatedStages.map((stage, index) => (
@@ -325,7 +325,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
                       return next;
                     });
                   }}
-                  className="min-w-56 rounded-md border border-[#2A2A2A] bg-[#111] px-3 py-2 text-[#DDD] placeholder:text-[#555]"
+                  className="min-w-56 rounded-md border border-[var(--border-strong)] bg-[var(--card)] px-3 py-2 text-[var(--text-secondary)] placeholder:text-[var(--text-muted)]"
                 />
               ))}
             </div>
@@ -337,7 +337,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
                 type="button"
                 disabled={loading || generatedStages.length === 0}
                 onClick={onConfirmPipeline}
-                className="rounded-md bg-white px-4 py-2 text-black disabled:opacity-50"
+                className="rounded-md bg-[var(--accent)] px-4 py-2 text-[var(--accent-contrast)] disabled:opacity-50"
               >
                 Confirm Pipeline
               </button>
@@ -345,7 +345,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
                 type="button"
                 disabled={loading}
                 onClick={() => void generatePipeline(pipelineDream)}
-                className="rounded-md border border-[#2A2A2A] bg-transparent px-4 py-2 text-[#555] disabled:opacity-50"
+                className="rounded-md border border-[var(--border-strong)] bg-transparent px-4 py-2 text-[var(--text-muted)] disabled:opacity-50"
               >
                 Regenerate
               </button>
@@ -357,11 +357,11 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
       {step === "list" && (
         <div className="space-y-8">
           <header>
-            <p className="mb-3 text-[11px] uppercase tracking-[1.5px] text-[#444]">Your Dreams</p>
-            <h1 className="serif-heading text-5xl leading-none text-white">What are you building?</h1>
+            <p className="mb-3 text-[11px] uppercase tracking-[1.5px] text-[var(--text-muted)]">Your Dreams</p>
+            <h1 className="serif-heading text-5xl leading-none text-[var(--text-primary)]">What are you building?</h1>
           </header>
 
-          {dreams.length === 0 ? <p className="text-[#555]">No dreams yet.</p> : null}
+          {dreams.length === 0 ? <p className="text-[var(--text-muted)]">No dreams yet.</p> : null}
 
           <div className="space-y-4">
             {dreams.map((dream) => {
@@ -371,20 +371,20 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
               return (
                 <div
                   key={dream.id}
-                  className="rounded-[10px] border border-[#1E1E1E] bg-[#111] p-7 transition-colors hover:border-[#333]"
+                  className="rounded-[10px] border border-[var(--border)] bg-[var(--card)] p-7 transition-colors hover:border-[var(--border-hover)]"
                 >
                   <div className="mb-4 flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <p className="serif-heading text-[24px] leading-tight text-white">{dream.title}</p>
-                      <p className="mt-2 text-[12px] text-[#555]">
+                      <p className="serif-heading text-[24px] leading-tight text-[var(--text-primary)]">{dream.title}</p>
+                      <p className="mt-2 text-[12px] text-[var(--text-muted)]">
                         Goal: {dream.goals[0]?.outcome ?? "No goal yet."}
                       </p>
                     </div>
-                    <p className="serif-heading text-2xl text-white">{progress}%</p>
+                    <p className="serif-heading text-2xl text-[var(--text-primary)]">{progress}%</p>
                   </div>
 
-                  <div className="mb-4 h-1 overflow-hidden rounded bg-[#1A1A1A]">
-                    <div className="h-1 rounded bg-white" style={{ width: `${progress}%` }} />
+                  <div className="mb-4 h-1 overflow-hidden rounded bg-[var(--border)]">
+                    <div className="h-1 rounded bg-[var(--accent)]" style={{ width: `${progress}%` }} />
                   </div>
 
 
@@ -405,14 +405,14 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
 
                         void generatePipeline(dream);
                       }}
-                      className="rounded-md border border-[#2A2A2A] bg-transparent px-3 py-1 text-sm text-[#DDD]"
+                      className="rounded-md border border-[var(--border-strong)] bg-transparent px-3 py-1 text-sm text-[var(--text-secondary)]"
                     >
                       Open
                     </button>
                     <button
                       type="button"
                       onClick={() => void onArchiveDream(dream.id)}
-                      className="rounded-md border border-[#2A2A2A] bg-transparent px-3 py-1 text-sm text-[#555]"
+                      className="rounded-md border border-[var(--border-strong)] bg-transparent px-3 py-1 text-sm text-[var(--text-muted)]"
                     >
                       Archive
                     </button>
@@ -429,7 +429,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
                 setError(null);
                 setStep("dream");
               }}
-              className="w-full rounded-[10px] border border-dashed border-[#1E1E1E] px-6 py-5 text-center text-[13px] text-[#333]"
+              className="w-full rounded-[10px] border border-dashed border-[var(--border)] px-6 py-5 text-center text-[13px] text-[var(--text-muted)]"
             >
               + New Dream - {remainingSlots} slot{remainingSlots === 1 ? "" : "s"} remaining
             </button>
@@ -439,5 +439,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     </section>
   );
 }
+
+
 
 

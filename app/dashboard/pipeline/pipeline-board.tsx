@@ -16,6 +16,12 @@ const STATUSES: Array<{ key: CardStatus; label: string }> = [
   { key: "done", label: "Done" },
 ];
 
+const STATUS_ACCENTS: Record<CardStatus, string> = {
+  backlog: "var(--kanban-backlog)",
+  doing: "var(--kanban-doing)",
+  done: "var(--kanban-done)",
+};
+
 type Card = {
   id: string;
   stage_id: string;
@@ -287,16 +293,16 @@ export function PipelineBoard({
 
   return (
     <main className="min-h-screen max-w-[100vw] overflow-x-hidden px-4 py-4 md:p-10 [&_*]:box-border">
-      <h1 className="serif-heading text-[clamp(16px,4vw,28px)] leading-tight text-white break-words [overflow-wrap:anywhere] md:text-4xl">{dreamTitle}</h1>
-      <p className="mt-2 text-sm text-[#555]">{goalOutcome}</p>
+      <h1 className="serif-heading text-[clamp(16px,4vw,28px)] leading-tight text-[var(--text-primary)] break-words [overflow-wrap:anywhere] md:text-4xl">{dreamTitle}</h1>
+      <p className="mt-2 text-sm text-[var(--text-muted)]">{goalOutcome}</p>
       {error && <p className="mt-4 text-sm text-red-400">{error}</p>}
 
-      <section className="mt-6 rounded-lg border border-[#1E1E1E] bg-[#111] p-4">
+      <section className="mt-6 rounded-lg border border-[var(--border)] bg-[var(--card)] p-4">
         <div className="flex w-full items-center gap-3 overflow-hidden">
-          <div className="relative h-1 w-full flex-1 rounded bg-[#1A1A1A]">
-            <div className="h-1 rounded bg-white" style={{ width: `${percentComplete}%` }} />
+          <div className="relative h-1 w-full flex-1 rounded bg-[var(--border)]">
+            <div className="h-1 rounded bg-[var(--accent)]" style={{ width: `${percentComplete}%` }} />
           </div>
-          <span className="w-10 text-right text-xs font-medium text-white">{percentComplete}%</span>
+          <span className="w-10 text-right text-xs font-medium text-[var(--text-primary)]">{percentComplete}%</span>
         </div>
 
         {bottlenecks.length > 0 && (
@@ -324,8 +330,8 @@ export function PipelineBoard({
                 }}
                 className={`rounded-full border px-4 py-2 text-sm ${
                   selectedProjectId === project.id
-                    ? "border-white bg-white text-black"
-                    : "border-[#2A2A2A] bg-transparent text-[#555]"
+                    ? "border-[var(--accent)] bg-[var(--accent)] text-[var(--accent-contrast)]"
+                    : "border-[var(--border-strong)] bg-transparent text-[var(--text-muted)]"
                 }`}
               >
                 {project.name}
@@ -336,8 +342,8 @@ export function PipelineBoard({
       </div>
 
       <div className="mt-2 flex w-full gap-4 md:mt-6">
-        <aside className="hidden w-56 rounded border border-[#1E1E1E] bg-[#111] p-3 md:block">
-          <h2 className="text-[11px] uppercase tracking-[1.5px] text-[#444]">Projects</h2>
+        <aside className="hidden w-56 rounded border border-[var(--border)] bg-[var(--card)] p-3 md:block">
+          <h2 className="text-[11px] uppercase tracking-[1.5px] text-[var(--text-muted)]">Projects</h2>
           <div className="mt-3 space-y-2">
             {projects.map((project) => (
               <button
@@ -350,8 +356,8 @@ export function PipelineBoard({
                 }}
                 className={`w-full rounded px-3 py-2 text-left text-sm transition-colors ${
                   selectedProjectId === project.id
-                    ? "border border-[#2A2A2A] bg-[#1A1A1A] text-white"
-                    : "border border-[#1E1E1E] bg-[#111] text-[#555] hover:border-[#333]"
+                    ? "border border-[var(--border-strong)] bg-[var(--border)] text-[var(--text-primary)]"
+                    : "border border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] hover:border-[var(--border-hover)]"
                 }`}
               >
                 {project.name}
@@ -368,7 +374,7 @@ export function PipelineBoard({
               return (
                 <div
                   key={key}
-                  className="w-full max-w-full rounded border border-[#1E1E1E] bg-[#111] p-3 md:min-h-[360px] md:min-w-[250px]"
+                  className="w-full max-w-full rounded border border-[var(--border)] bg-[var(--card)] p-3 md:min-h-[360px] md:min-w-[250px]"
                   onDragOver={(event) => event.preventDefault()}
                   onDrop={(event) => {
                     event.preventDefault();
@@ -382,11 +388,11 @@ export function PipelineBoard({
                 >
                   <div
                     className={`mb-3 flex items-center justify-between border-b pb-2 ${
-                      key === "doing" ? "border-[#2A2A2A]" : "border-[#1A1A1A]"
+                      key === "doing" ? "border-[var(--border-strong)]" : "border-[var(--border)]"
                     }`}
                   >
-                    <h3 className="text-[11px] uppercase tracking-[1.5px] text-[#444]">{label}</h3>
-                    <span className="rounded-full bg-[#1A1A1A] px-2 py-0.5 text-[10px] text-[#333]">
+                    <h3 className="text-[11px] uppercase tracking-[1.5px]" style={{ color: STATUS_ACCENTS[key] }}>{label}</h3>
+                    <span className="rounded-full bg-[var(--border)] px-2 py-0.5 text-[10px] text-[var(--text-muted)]">
                       {cards.length}
                     </span>
                   </div>
@@ -402,8 +408,8 @@ export function PipelineBoard({
                         }}
                         className={`group relative rounded border px-3 py-2 text-[12px] leading-5 cursor-grab ${
                           key === "done"
-                            ? "border-[#1A1A1A] bg-[#0D0D0D] text-[#555] opacity-60"
-                            : "border-[#1A1A1A] bg-[#111] text-[#DDD]"
+                            ? "border-[var(--border)] bg-[var(--card)] text-[var(--text-muted)] opacity-60"
+                            : "border-[var(--border)] bg-[var(--card)] text-[var(--text-secondary)]"
                         }`}
                       >
                         <button
@@ -413,7 +419,7 @@ export function PipelineBoard({
                             void onDeleteCard(card.id);
                           }}
                           disabled={deletingCardId === card.id}
-                          className="absolute right-1 top-1 hidden h-5 w-5 items-center justify-center rounded text-xs text-[#555] hover:bg-[#1A1A1A] hover:text-[#DDD] group-hover:flex disabled:opacity-50"
+                          className="absolute right-1 top-1 hidden h-5 w-5 items-center justify-center rounded text-xs text-[var(--text-muted)] hover:bg-[var(--border)] hover:text-[var(--text-secondary)] group-hover:flex disabled:opacity-50"
                           aria-label="Delete card"
                         >
                           ×
@@ -431,7 +437,7 @@ export function PipelineBoard({
                           value={newCardTitle}
                           onChange={(event) => setNewCardTitle(event.target.value)}
                           onKeyDown={(event) => onCardKeyDown(event, key)}
-                          className="w-full rounded border border-dashed border-[#1A1A1A] bg-transparent px-3 py-2 text-sm text-[#DDD] placeholder:text-[#555]"
+                          className="w-full rounded border border-dashed border-[var(--border)] bg-transparent px-3 py-2 text-sm text-[var(--text-secondary)] placeholder:text-[var(--text-muted)]"
                           placeholder="Card title"
                           autoFocus
                         />
@@ -440,7 +446,7 @@ export function PipelineBoard({
                             type="button"
                             onClick={() => void onAddCard(key)}
                             disabled={savingCard}
-                            className="rounded-md bg-white px-3 py-1 text-sm text-black disabled:opacity-50"
+                            className="rounded-md bg-[var(--accent)] px-3 py-1 text-sm text-[var(--accent-contrast)] disabled:opacity-50"
                           >
                             Save
                           </button>
@@ -451,7 +457,7 @@ export function PipelineBoard({
                               setNewCardTitle("");
                               setError(null);
                             }}
-                            className="rounded-md border border-[#2A2A2A] px-3 py-1 text-sm text-[#555]"
+                            className="rounded-md border border-[var(--border-strong)] px-3 py-1 text-sm text-[var(--text-muted)]"
                           >
                             Cancel
                           </button>
@@ -465,7 +471,7 @@ export function PipelineBoard({
                           setNewCardTitle("");
                           setError(null);
                         }}
-                        className="w-full rounded border border-dashed border-[#1A1A1A] px-3 py-2 text-sm text-[#333]"
+                        className="w-full rounded border border-dashed border-[var(--border)] px-3 py-2 text-sm text-[var(--text-muted)]"
                       >
                         + Add card
                       </button>
@@ -478,10 +484,13 @@ export function PipelineBoard({
         </section>
       </div>
 
-      {movingCardId && <p className="mt-2 text-sm text-[#555]">Moving card...</p>}
+      {movingCardId && <p className="mt-2 text-sm text-[var(--text-muted)]">Moving card...</p>}
     </main>
   );
 }
+
+
+
 
 
 

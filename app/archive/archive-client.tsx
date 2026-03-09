@@ -57,25 +57,25 @@ export function ArchiveClient({ initialDreams, initialActiveDreamCount }: Archiv
   return (
     <section className="mx-auto w-full max-w-5xl p-12">
       <header className="mb-8">
-        <h1 className="serif-heading text-[28px] text-white">Archive</h1>
-        <p className="mt-2 text-[13px] text-[#555]">Dreams you&apos;ve set aside.</p>
+        <h1 className="serif-heading text-[28px] text-[var(--text-primary)]">Archive</h1>
+        <p className="mt-2 text-[13px] text-[var(--text-muted)]">Dreams you&apos;ve set aside.</p>
       </header>
 
       {dreams.length === 0 ? (
-        <div className="flex min-h-[260px] items-center justify-center rounded-[10px] border border-[#1E1E1E] bg-[#111]">
-          <p className="text-[13px] text-[#555]">Nothing archived yet.</p>
+        <div className="flex min-h-[260px] items-center justify-center rounded-[10px] border border-[var(--border)] bg-[var(--card)]">
+          <p className="text-[13px] text-[var(--text-muted)]">Nothing archived yet.</p>
         </div>
       ) : (
         <div className="space-y-4">
           {dreams.map((dream) => (
             <div
               key={dream.id}
-              className="rounded-[10px] border border-[#1E1E1E] bg-[#111] p-7 transition-colors hover:border-[#333]"
+              className="rounded-[10px] border border-[var(--border)] bg-[var(--card)] p-7 transition-colors hover:border-[var(--border-hover)]"
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="min-w-0 flex-1">
-                  <p className="serif-heading text-[24px] leading-tight text-white">{dream.title}</p>
-                  <p className="mt-2 text-[12px] text-[#555]">
+                  <p className="serif-heading text-[24px] leading-tight text-[var(--text-primary)]">{dream.title}</p>
+                  <p className="mt-2 text-[12px] text-[var(--text-muted)]">
                     Archived · {new Date(dream.created_at).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
@@ -91,12 +91,12 @@ export function ArchiveClient({ initialDreams, initialActiveDreamCount }: Archiv
                     type="button"
                     onClick={() => void restoreDream(dream.id)}
                     disabled={restoringId === dream.id}
-                    className="rounded-md border border-[#2A2A2A] bg-transparent px-3 py-1 text-sm text-[#DDD] disabled:opacity-40"
+                    className="rounded-md border border-[var(--border-strong)] bg-transparent px-3 py-1 text-sm text-[var(--text-secondary)] disabled:opacity-40"
                   >
                     {restoringId === dream.id ? "Restoring..." : "Restore"}
                   </button>
                 ) : (
-                  <p className="text-[12px] text-[#555]">3 active dreams - archive one first</p>
+                  <p className="text-[12px] text-[var(--text-muted)]">3 active dreams - archive one first</p>
                 )}
               </div>
             </div>
@@ -106,3 +106,4 @@ export function ArchiveClient({ initialDreams, initialActiveDreamCount }: Archiv
     </section>
   );
 }
+
