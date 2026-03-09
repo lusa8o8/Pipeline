@@ -18,7 +18,7 @@ export function ArchiveClient({ initialDreams, initialActiveDreamCount }: Archiv
   const [dreams, setDreams] = useState<ArchivedDream[]>(initialDreams);
   const [activeDreamCount, setActiveDreamCount] = useState(initialActiveDreamCount);
   const [restoringId, setRestoringId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [restoreErrors, setRestoreErrors] = useState<Record<string, string>>({});
 
   const canRestore = activeDreamCount < 3;
 
@@ -27,8 +27,12 @@ export function ArchiveClient({ initialDreams, initialActiveDreamCount }: Archiv
       return;
     }
 
-    setError(null);
     setRestoringId(dreamId);
+    setRestoreErrors((current) => {
+      const next = { ...current };
+      delete next[dreamId];
+      return next;
+    });
 
     const response = await fetch(`/api/dreams/${dreamId}`, {
       method: "PATCH",
@@ -36,12 +40,13 @@ export function ArchiveClient({ initialDreams, initialActiveDreamCount }: Archiv
       body: JSON.stringify({ status: "active" }),
     });
 
-    const data = (await response.json()) as { message?: string };
+    const data = (await response.json()) as { message?: string; error?: string };
 
     setRestoringId(null);
 
     if (!response.ok) {
-      setError(data.message ?? "Failed to restore dream.");
+      const message = data.error ?? data.message ?? "Failed to restore dream.";
+      setRestoreErrors((current) => ({ ...current, [dreamId]: message }));
       return;
     }
 
@@ -55,8 +60,6 @@ export function ArchiveClient({ initialDreams, initialActiveDreamCount }: Archiv
         <h1 className="serif-heading text-[28px] text-white">Archive</h1>
         <p className="mt-2 text-[13px] text-[#555]">Dreams you&apos;ve set aside.</p>
       </header>
-
-      {error ? <p className="mb-4 text-sm text-red-400">{error}</p> : null}
 
       {dreams.length === 0 ? (
         <div className="flex min-h-[260px] items-center justify-center rounded-[10px] border border-[#1E1E1E] bg-[#111]">
@@ -81,7 +84,9 @@ export function ArchiveClient({ initialDreams, initialActiveDreamCount }: Archiv
                   </p>
                 </div>
 
-                {canRestore ? (
+                {restoreErrors[dream.id] ? (
+                  <p className="text-[12px] text-red-400">{restoreErrors[dream.id]}</p>
+                ) : canRestore ? (
                   <button
                     type="button"
                     onClick={() => void restoreDream(dream.id)}
