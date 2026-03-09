@@ -26,10 +26,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <div className="md:pl-[220px]">{children}</div>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased relative`}>
+        <div className="md:pl-[220px] min-h-screen">{children}</div>
         <AppNav />
       </body>
     </html>
   );
 }
+

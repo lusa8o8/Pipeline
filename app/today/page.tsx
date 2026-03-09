@@ -43,7 +43,7 @@ export default async function TodayPage() {
 
   if (activeDreamIds.length === 0) {
     return (
-      <main className="flex min-h-screen bg-[#080808] text-white">
+      <main className="flex bg-[#080808] text-white">
         <div className="flex-1 pb-[80px] md:pb-0"><TodayClient initialItems={[]} activeDreamTitle={activeDream?.title ?? "No active dream"} /></div>
       </main>
     );
@@ -59,7 +59,7 @@ export default async function TodayPage() {
 
   if (activePipelineIds.length === 0) {
     return (
-      <main className="flex min-h-screen bg-[#080808] text-white">
+      <main className="flex bg-[#080808] text-white">
         <div className="flex-1 pb-[80px] md:pb-0"><TodayClient initialItems={[]} activeDreamTitle={activeDream?.title ?? "No active dream"} /></div>
       </main>
     );
@@ -101,11 +101,12 @@ export default async function TodayPage() {
   });
 
   return (
-    <main className="flex min-h-screen bg-[#080808] text-white">
+    <main className="flex bg-[#080808] text-white">
       <div className="flex-1 pb-[80px] md:pb-0"><TodayClient initialItems={todayItems} activeDreamTitle={activeDream?.title ?? "No active dream"} /></div>
     </main>
   );
 }
+
 
 
 
