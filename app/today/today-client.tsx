@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useMemo, useState } from "react";
 
@@ -114,7 +114,7 @@ export function TodayClient({ initialItems, activeDreamTitle }: TodayClientProps
                 type="button"
                 onClick={() => void markDone(item.card_id)}
                 disabled={loadingCardId === item.card_id}
-                className="rounded-md border border-[#2A2A2A] bg-[#1A1A1A] px-3 py-1.5 text-[11px] text-[#DDD] disabled:opacity-40"
+                className="min-w-[90px] self-start rounded-md border border-[#2A2A2A] bg-[#1A1A1A] px-3 py-1.5 text-[11px] text-[#DDD] disabled:opacity-40"
               >
                 Mark Done
               </button>
@@ -128,3 +128,4 @@ export function TodayClient({ initialItems, activeDreamTitle }: TodayClientProps
     </section>
   );
 }
+
