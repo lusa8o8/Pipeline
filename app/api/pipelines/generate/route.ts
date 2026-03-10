@@ -58,7 +58,7 @@ export async function POST(request: Request) {
 
   const { data: dream, error: dreamError } = await supabase
     .from("dreams")
-    .select("id,title,context,user_id,goals(outcome,created_at),pipelines(id)")
+    .select("id,title,context,context_summary,user_id,goals(outcome,created_at),pipelines(id)")
     .eq("id", dreamId)
     .eq("user_id", user.id)
     .single();
@@ -85,9 +85,18 @@ export async function POST(request: Request) {
     return NextResponse.json({ message: "Missing ANTHROPIC_API_KEY." }, { status: 500 });
   }
 
-  const userMessage = dream.context?.trim()
-    ? `Dream: ${dream.title}\nGoal: ${goal.outcome}\nContext: ${dream.context}`
-    : `Dream: ${dream.title}\nGoal: ${goal.outcome}`;
+const contextBlock = dream.context_summary
+  ? `User context: ${dream.context_summary.trim()}`
+  : dream.context?.trim()
+  ? `User context: ${dream.context.trim()}`
+  : "";
+const userMessage = [
+  `Dream: ${dream.title}`,
+  `Goal: ${goal.outcome}`,
+  contextBlock,
+]
+  .filter(Boolean)
+  .join("\n\n");
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ContextFlow } from "./context-flow";
 
 type Goal = {
   id: string;
@@ -23,6 +24,7 @@ type Dream = {
   user_id: string;
   title: string;
   context?: string | null;
+  context_summary?: string | null;
   status: "active" | "archived";
   created_at: string;
   goals: Goal[];
@@ -36,7 +38,7 @@ type DashboardClientProps = {
 export function DashboardClient({ initialDreams }: DashboardClientProps) {
   const router = useRouter();
   const [dreams, setDreams] = useState<Dream[]>(initialDreams);
-  const [step, setStep] = useState<"list" | "dream" | "goal" | "pipeline">(
+  const [step, setStep] = useState<"list" | "dream" | "context" | "goal" | "pipeline">(
     initialDreams.length === 0 ? "dream" : "list"
   );
   const [dreamTitle, setDreamTitle] = useState("");
@@ -48,6 +50,10 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [buildingTasks, setBuildingTasks] = useState(false);
+
+  const handleContextSummary = () => {
+    setStep("goal");
+  };
 
   const activeDreamCount = useMemo(
     () => dreams.filter((dream) => dream.status === "active").length,
@@ -123,7 +129,7 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
     setPendingDream({ ...data.dream, goals: [], pipelines: [] });
     setDreamTitle("");
     setDreamContext("");
-    setStep("goal");
+    setStep("context");
   };
 
   const onCreateGoal = async (event: FormEvent<HTMLFormElement>) => {
@@ -243,6 +249,18 @@ export function DashboardClient({ initialDreams }: DashboardClientProps) {
 
     router.push(`/dashboard/pipeline/${data.pipeline.id}`);
   };
+
+  if (step === "context" && pendingDream) {
+    return (
+      <section className="mx-auto w-full max-w-3xl">
+        <ContextFlow
+          dreamId={pendingDream.id}
+          dreamTitle={pendingDream.title}
+          onSummaryReady={handleContextSummary}
+        />
+      </section>
+    );
+  }
 
   return (
     <section className="mx-auto w-full max-w-5xl p-12">

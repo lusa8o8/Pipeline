@@ -70,7 +70,7 @@ export async function POST(_request: Request, { params }: Params) {
 
   const { data: dream, error: dreamError } = await supabase
     .from("dreams")
-    .select("title,context,goals(outcome,created_at)")
+    .select("title,context,context_summary,goals(outcome,created_at)")
     .eq("id", pipeline.dream_id)
     .eq("user_id", user.id)
     .single();
@@ -111,9 +111,19 @@ export async function POST(_request: Request, { params }: Params) {
 
   const projectNames = projects.map((project) => project.name).join(", ");
 
-  const userMessage = dream.context?.trim()
-    ? `Dream: ${dream.title}\nGoal: ${goalOutcome}\nContext: ${dream.context}\nProjects: ${projectNames}`
-    : `Dream: ${dream.title}\nGoal: ${goalOutcome}\nProjects: ${projectNames}`;
+const contextBlock = dream.context_summary
+  ? `User context: ${dream.context_summary.trim()}`
+  : dream.context?.trim()
+  ? `User context: ${dream.context.trim()}`
+  : "";
+const userMessage = [
+  `Dream: ${dream.title}`,
+  `Goal: ${goalOutcome}`,
+  contextBlock,
+  `Projects: ${projectNames}`,
+]
+  .filter(Boolean)
+  .join("\n");
 
   const response = await fetch("https://api.anthropic.com/v1/messages", {
     method: "POST",

@@ -23,6 +23,7 @@ type Dream = {
   user_id: string;
   title: string;
   context?: string | null;
+  context_summary?: string | null;
   status: "active" | "archived";
   created_at: string;
   goals: Goal[];
@@ -41,7 +42,9 @@ export default async function DashboardPage() {
 
   const { data: dreamsData, error: dreamsError } = await supabase
     .from("dreams")
-    .select("id,user_id,title,context,status,created_at,goals(id,dream_id,user_id,outcome,created_at)")
+    .select(
+      "id,user_id,title,context,context_summary,status,created_at,goals(id,dream_id,user_id,outcome,created_at)"
+    )
     .eq("user_id", user.id)
     .eq("status", "active")
     .order("created_at", { ascending: false });
